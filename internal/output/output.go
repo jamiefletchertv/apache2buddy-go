@@ -28,7 +28,7 @@ func DisplayEnhancedResults(sysInfo *system.SystemInfo, memStats *analysis.Memor
 	// System Memory Info
 	fmt.Printf("Total RAM: %d MB\n", sysInfo.TotalMemoryMB)
 	fmt.Printf("Available RAM: %d MB\n", sysInfo.AvailableMemoryMB)
-	
+
 	// Other Services (if any)
 	totalOtherMemory := system.GetTotalOtherServicesMemory(sysInfo)
 	if totalOtherMemory > 0 {
@@ -55,13 +55,13 @@ func DisplayEnhancedResults(sysInfo *system.SystemInfo, memStats *analysis.Memor
 	// Apache Status (if available)
 	if statusInfo != nil {
 		fmt.Printf("Active workers: %d, Idle workers: %d\n", statusInfo.ActiveWorkers, statusInfo.IdleWorkers)
-		
+
 		if statusInfo.RequestsPerSec > 0 {
 			fmt.Printf("Requests per second: %.3f\n", statusInfo.RequestsPerSec)
 		}
-		
+
 		if statusInfo.ExtendedEnabled && statusInfo.Load1Min > 0 {
-			fmt.Printf("System load: %.2f (1min), %.2f (5min), %.2f (15min)\n", 
+			fmt.Printf("System load: %.2f (1min), %.2f (5min), %.2f (15min)\n",
 				statusInfo.Load1Min, statusInfo.Load5Min, statusInfo.Load15Min)
 		}
 		fmt.Println()
@@ -70,16 +70,16 @@ func DisplayEnhancedResults(sysInfo *system.SystemInfo, memStats *analysis.Memor
 	// Memory Analysis and Recommendations
 	currentMemoryUsage := float64(config.GetCurrentMaxClients()) * memStats.LargestMB
 	currentUtilization := (currentMemoryUsage / float64(sysInfo.AvailableMemoryMB)) * 100
-	
-	fmt.Printf("Current memory usage: %.1f MB (%.1f%% of available)\n", 
+
+	fmt.Printf("Current memory usage: %.1f MB (%.1f%% of available)\n",
 		currentMemoryUsage, currentUtilization)
-	
+
 	if recommendations.RecommendedMaxClients != recommendations.CurrentMaxClients {
 		recommendedMemoryUsage := float64(recommendations.RecommendedMaxClients) * memStats.LargestMB
 		recommendedUtilization := (recommendedMemoryUsage / float64(sysInfo.AvailableMemoryMB)) * 100
-		
+
 		fmt.Printf("Recommended MaxRequestWorkers: %d\n", recommendations.RecommendedMaxClients)
-		fmt.Printf("Projected memory usage: %.1f MB (%.1f%% of available)\n", 
+		fmt.Printf("Projected memory usage: %.1f MB (%.1f%% of available)\n",
 			recommendedMemoryUsage, recommendedUtilization)
 	}
 	fmt.Println()
@@ -168,7 +168,7 @@ func detectServerBuilt() string {
 // showDebugInformation displays detailed technical information when debug mode is enabled
 func showDebugInformation(sysInfo *system.SystemInfo, memStats *analysis.MemoryStats, config *config.ApacheConfig, recommendations *analysis.Recommendations, statusInfo *status.ApacheStatus, logAnalysis *logs.LogAnalysis) {
 	debug.Section("DETAILED DEBUG INFORMATION")
-	
+
 	fmt.Println(strings.Repeat("=", 60))
 	fmt.Println("DEBUG INFORMATION (detailed technical data)")
 	fmt.Println(strings.Repeat("=", 60))
@@ -178,7 +178,7 @@ func showDebugInformation(sysInfo *system.SystemInfo, memStats *analysis.MemoryS
 	fmt.Printf("Total Memory: %d MB\n", sysInfo.TotalMemoryMB)
 	fmt.Printf("Available Memory: %d MB\n", sysInfo.AvailableMemoryMB)
 	fmt.Printf("Other Services Memory: %d MB\n", system.GetTotalOtherServicesMemory(sysInfo))
-	
+
 	if len(sysInfo.OtherServices) > 0 {
 		fmt.Printf("Service Breakdown:\n")
 		for service, memory := range sysInfo.OtherServices {
@@ -261,7 +261,7 @@ func showDebugInformation(sysInfo *system.SystemInfo, memStats *analysis.MemoryS
 		if len(statusInfo.TopClients) > 0 {
 			fmt.Printf("\nTop Clients:\n")
 			for i, client := range statusInfo.TopClients {
-				fmt.Printf("  %d. IP: %s, Requests: %d, Bytes: %d, Status: %s\n", 
+				fmt.Printf("  %d. IP: %s, Requests: %d, Bytes: %d, Status: %s\n",
 					i+1, client.IP, client.Requests, client.Bytes, client.Status)
 			}
 		}
@@ -274,7 +274,7 @@ func showDebugInformation(sysInfo *system.SystemInfo, memStats *analysis.MemoryS
 	fmt.Printf("Analyzed Lines: %d\n", logAnalysis.AnalyzedLines)
 	fmt.Printf("MaxClients Exceeded: %d\n", logAnalysis.MaxClientsExceeded)
 	fmt.Printf("PHP Fatal Errors: %d\n", logAnalysis.PHPFatalErrors)
-	
+
 	if len(logAnalysis.RecentErrors) > 0 {
 		fmt.Printf("Recent Errors (%d):\n", len(logAnalysis.RecentErrors))
 		for i, err := range logAnalysis.RecentErrors {
@@ -287,25 +287,25 @@ func showDebugInformation(sysInfo *system.SystemInfo, memStats *analysis.MemoryS
 	if memStats.ProcessCount > 0 {
 		currentMemoryUsage := float64(config.GetCurrentMaxClients()) * memStats.LargestMB
 		recommendedMemoryUsage := float64(recommendations.RecommendedMaxClients) * memStats.LargestMB
-		
+
 		fmt.Printf("Current Config Memory Usage:\n")
 		fmt.Printf("  MaxClients: %d\n", config.GetCurrentMaxClients())
 		fmt.Printf("  × Largest Process: %.2f MB\n", memStats.LargestMB)
 		fmt.Printf("  = Total Usage: %.2f MB\n", currentMemoryUsage)
 		fmt.Printf("  / Available: %d MB\n", sysInfo.AvailableMemoryMB)
-		fmt.Printf("  = Utilization: %.1f%%\n", (currentMemoryUsage / float64(sysInfo.AvailableMemoryMB)) * 100)
-		
+		fmt.Printf("  = Utilization: %.1f%%\n", (currentMemoryUsage/float64(sysInfo.AvailableMemoryMB))*100)
+
 		fmt.Printf("\nRecommended Config Memory Usage:\n")
 		fmt.Printf("  Recommended MaxClients: %d\n", recommendations.RecommendedMaxClients)
 		fmt.Printf("  × Largest Process: %.2f MB\n", memStats.LargestMB)
 		fmt.Printf("  = Total Usage: %.2f MB\n", recommendedMemoryUsage)
 		fmt.Printf("  / Available: %d MB\n", sysInfo.AvailableMemoryMB)
-		fmt.Printf("  = Utilization: %.1f%%\n", (recommendedMemoryUsage / float64(sysInfo.AvailableMemoryMB)) * 100)
-		
+		fmt.Printf("  = Utilization: %.1f%%\n", (recommendedMemoryUsage/float64(sysInfo.AvailableMemoryMB))*100)
+
 		fmt.Printf("\nMemory Safety Calculations:\n")
 		fmt.Printf("  Available Memory: %d MB\n", sysInfo.AvailableMemoryMB)
-		fmt.Printf("  Max Theoretical (100%%): %d workers\n", int(float64(sysInfo.AvailableMemoryMB) / memStats.LargestMB))
-		fmt.Printf("  Conservative (90%%): %d workers\n", int(float64(sysInfo.AvailableMemoryMB) / memStats.LargestMB * 0.9))
+		fmt.Printf("  Max Theoretical (100%%): %d workers\n", int(float64(sysInfo.AvailableMemoryMB)/memStats.LargestMB))
+		fmt.Printf("  Conservative (90%%): %d workers\n", int(float64(sysInfo.AvailableMemoryMB)/memStats.LargestMB*0.9))
 	}
 
 	fmt.Println(strings.Repeat("=", 60))
