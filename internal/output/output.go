@@ -5,18 +5,15 @@ import (
 	"os/exec"
 	"strings"
 
-	"apache2buddy/internal/analysis"
-	"apache2buddy/internal/config"
-	"apache2buddy/internal/debug"
-	"apache2buddy/internal/logs"
-	"apache2buddy/internal/status"
-	"apache2buddy/internal/system"
+	"apache2buddy-go/internal/analysis"
+	"apache2buddy-go/internal/config"
+	"apache2buddy-go/internal/debug"
+	"apache2buddy-go/internal/logs"
+	"apache2buddy-go/internal/status"
+	"apache2buddy-go/internal/system"
 )
 
 func DisplayEnhancedResults(sysInfo *system.SystemInfo, memStats *analysis.MemoryStats, config *config.ApacheConfig, recommendations *analysis.Recommendations, statusInfo *status.ApacheStatus, logAnalysis *logs.LogAnalysis) {
-	fmt.Println()
-	fmt.Println("apache2buddy - Enhanced Go Version")
-	fmt.Println("==================================")
 	fmt.Println()
 
 	// Server Information Section
@@ -136,7 +133,7 @@ func DisplayEnhancedResults(sysInfo *system.SystemInfo, memStats *analysis.Memor
 	}
 
 	fmt.Println()
-	fmt.Printf("Analysis completed. Check /var/log/apache2buddy.log for historical data.\n")
+	fmt.Printf("Analysis completed. Check /var/log/apache2buddy-go.log for historical data.\n")
 }
 
 // detectServerBuilt tries to get the Apache build date

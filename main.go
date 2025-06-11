@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
-	"apache2buddy/internal/analysis"
-	"apache2buddy/internal/config"
-	"apache2buddy/internal/debug"
-	"apache2buddy/internal/logs"
-	"apache2buddy/internal/output"
-	"apache2buddy/internal/process"
-	"apache2buddy/internal/status"
-	"apache2buddy/internal/system"
+	"apache2buddy-go/internal/analysis"
+	"apache2buddy-go/internal/config"
+	"apache2buddy-go/internal/debug"
+	"apache2buddy-go/internal/logs"
+	"apache2buddy-go/internal/output"
+	"apache2buddy-go/internal/process"
+	"apache2buddy-go/internal/status"
+	"apache2buddy-go/internal/system"
 )
 
 func main() {
@@ -22,6 +23,7 @@ func main() {
 		debugFlag   = flag.Bool("debug", false, "Enable debug mode for detailed troubleshooting")
 		helpFlag    = flag.Bool("help", false, "Show help information")
 		versionFlag = flag.Bool("version", false, "Show version information")
+		historyFlag = flag.Int("history", 0, "Show last N entries from apache2buddy log file")
 	)
 	flag.Parse()
 
@@ -37,13 +39,19 @@ func main() {
 		return
 	}
 
+	// Handle history flag
+	if *historyFlag > 0 {
+		showHistory(*historyFlag)
+		return
+	}
+
 	// Enable debug mode if requested
 	if *debugFlag {
 		debug.Enable()
 		debug.DumpSystemInfo()
 	}
 
-	fmt.Println("Apache2Buddy Go - Enhanced Version")
+	fmt.Println("Apache2Buddy Go")
 	fmt.Println("==================================")
 
 	// Debug timing
@@ -79,23 +87,21 @@ func main() {
 	sysTimer.Stop()
 	debug.DumpStruct("SystemInfo", sysInfo)
 
-	fmt.Printf("System: %d MB total, %d MB available\n", sysInfo.TotalMemoryMB, sysInfo.AvailableMemoryMB)
-
 	// Parse Apache configuration with enhanced version detection
 	debug.Section("PARSING APACHE CONFIGURATION")
 	configTimer := debug.StartTimer("Config Parse")
 	apacheConfig, err := config.ParseWithVersion()
 	if err != nil {
 		debug.Warn("Could not parse Apache config: %v", err)
-		log.Printf("Warning: Could not parse Apache config: %v", err)
+		// Only show warning in debug mode, not in normal output
+		if !debug.IsEnabled() {
+			fmt.Printf("Warning: Could not parse Apache config, using defaults\n")
+		}
 		apacheConfig = config.GetDefaults()
 		debug.Info("Using default Apache configuration")
 	}
 	configTimer.Stop()
 	debug.DumpStruct("ApacheConfig", apacheConfig)
-
-	fmt.Printf("Apache: %s v%s, %s MPM, MaxClients/MaxRequestWorkers: %d\n",
-		apacheConfig.ServerName, apacheConfig.Version, apacheConfig.MPMModel, apacheConfig.GetCurrentMaxClients())
 
 	// Check for control panels
 	debug.Info("Checking for control panels")
@@ -116,14 +122,11 @@ func main() {
 
 	totalOtherMemory := system.GetTotalOtherServicesMemory(sysInfo)
 	if totalOtherMemory > 0 {
-		for service, memory := range sysInfo.OtherServices {
-			if service != "PHP-FPM-Note" && memory > 0 {
-				fmt.Printf("Service detected: %s using %d MB\n", service, memory)
-			}
+		// Only show this in debug mode or if significant
+		if debug.IsEnabled() || totalOtherMemory > 100 {
+			fmt.Printf("Other services using %d MB RAM\n", totalOtherMemory)
 		}
-		fmt.Printf("Total other services: %d MB\n", totalOtherMemory)
 		sysInfo.AvailableMemoryMB -= totalOtherMemory
-		fmt.Printf("Remaining for Apache: %d MB\n", sysInfo.AvailableMemoryMB)
 		debug.Info("Adjusted available memory after services: %d MB", sysInfo.AvailableMemoryMB)
 	}
 
@@ -133,11 +136,12 @@ func main() {
 	statusInfo, err := status.GetApacheStatus()
 	if err != nil {
 		debug.Warn("Could not get Apache status info: %v", err)
-		log.Printf("Note: Could not get Apache status info: %v", err)
-		log.Printf("Consider enabling mod_status with ExtendedStatus On for better analysis")
+		// Only show this warning in debug mode
+		if debug.IsEnabled() {
+			log.Printf("Note: Could not get Apache status info: %v", err)
+			log.Printf("Consider enabling mod_status with ExtendedStatus On for better analysis")
+		}
 	} else {
-		fmt.Printf("Apache Status: %d active workers, %.1f requests/sec\n",
-			statusInfo.ActiveWorkers, statusInfo.RequestsPerSec)
 		debug.DumpStruct("ApacheStatus", statusInfo)
 	}
 	statusTimer.Stop()
@@ -159,33 +163,21 @@ func main() {
 
 	debug.Info("Found %d Apache worker processes", len(processes))
 	debug.DumpSlice("ApacheProcesses", processes)
-	fmt.Printf("Found %d Apache worker processes\n", len(processes))
 
 	// Get virtual host count
 	debug.Info("Counting virtual hosts")
 	vhostCount := config.GetVirtualHostCount(apacheConfig.ConfigPath)
-	if vhostCount > 0 {
-		fmt.Printf("Virtual hosts configured: %d\n", vhostCount)
-		debug.Info("Virtual hosts found: %d", vhostCount)
-	} else {
-		debug.Info("No virtual hosts found or could not count them")
-	}
+	debug.Info("Virtual hosts found: %d", vhostCount)
 
 	// Check Apache logs for issues
 	debug.Section("ANALYZING APACHE LOGS")
-	fmt.Printf("Analyzing Apache logs...\n")
 	logTimer := debug.StartTimer("Log Analysis")
 	logAnalysis := logs.AnalyzeApacheLogs()
 	logTimer.Stop()
 	debug.DumpStruct("LogAnalysis", logAnalysis)
 
-	if logAnalysis.MaxClientsExceeded > 0 {
-		fmt.Printf("⚠️  MaxRequestWorkers exceeded %d times in logs\n", logAnalysis.MaxClientsExceeded)
-	}
-
 	// Calculate memory statistics and enhanced recommendations
 	debug.Section("CALCULATING RECOMMENDATIONS")
-	fmt.Printf("Calculating recommendations...\n")
 	memTimer := debug.StartTimer("Memory Analysis")
 	memStats := analysis.CalculateMemoryStats(processes)
 	recommendations := analysis.GenerateEnhancedRecommendations(sysInfo, memStats, apacheConfig, statusInfo, vhostCount)
@@ -194,9 +186,8 @@ func main() {
 	debug.DumpStruct("MemoryStats", memStats)
 	debug.DumpStruct("Recommendations", recommendations)
 
-	// Display enhanced results
+	// Display enhanced results (this handles all the main output)
 	debug.Section("GENERATING REPORT")
-	fmt.Printf("Generating report...\n")
 	reportTimer := debug.StartTimer("Report Generation")
 	output.DisplayEnhancedResults(sysInfo, memStats, apacheConfig, recommendations, statusInfo, logAnalysis)
 	reportTimer.Stop()
@@ -206,11 +197,11 @@ func main() {
 	logEntryTimer := debug.StartTimer("Log Entry Creation")
 	if err := logs.CreateLogEntry(sysInfo, memStats, apacheConfig, recommendations); err != nil {
 		debug.Warn("Could not create log entry: %v", err)
-		fmt.Printf("Note: Could not create log entry: %v\n", err)
+		if debug.IsEnabled() {
+			fmt.Printf("Note: Could not create log entry: %v\n", err)
+		}
 	}
 	logEntryTimer.Stop()
-
-	fmt.Printf("Analysis complete!\n")
 
 	// Exit with status code based on recommendations
 	debug.Info("Exiting with status based on recommendations: %s", recommendations.Status)
@@ -231,16 +222,17 @@ func main() {
 }
 
 func showHelp() {
-	fmt.Println("Apache2Buddy Go - Enhanced Version")
+	fmt.Println("Apache2Buddy Go")
 	fmt.Println("==================================")
 	fmt.Println()
 	fmt.Println("USAGE:")
 	fmt.Println("  apache2buddy [OPTIONS]")
 	fmt.Println()
 	fmt.Println("OPTIONS:")
-	fmt.Println("  -debug     Enable debug mode for detailed troubleshooting output")
-	fmt.Println("  -help      Show this help information")
-	fmt.Println("  -version   Show version information")
+	fmt.Println("  -debug         Enable debug mode for detailed troubleshooting output")
+	fmt.Println("  -help          Show this help information")
+	fmt.Println("  -version       Show version information")
+	fmt.Println("  -history N     Show last N entries from apache2buddy log file")
 	fmt.Println()
 	fmt.Println("DESCRIPTION:")
 	fmt.Println("  Analyzes Apache HTTP Server configuration and provides tuning recommendations")
@@ -257,17 +249,43 @@ func showHelp() {
 	fmt.Println("  - Exit code 2: Configuration critical (CRITICAL)")
 	fmt.Println()
 	fmt.Println("EXAMPLES:")
-	fmt.Println("  sudo ./apache2buddy                    # Normal analysis")
-	fmt.Println("  sudo ./apache2buddy -debug             # Debug mode with detailed output")
+	fmt.Println("  sudo ./apache2buddy-go                    # Normal analysis")
+	fmt.Println("  sudo ./apache2buddy-go -debug             # Debug mode with detailed output")
+	fmt.Println("  sudo ./apache2buddy-go -history 10        # Show last 10 log entries")
 	fmt.Println()
 	fmt.Println("LOG FILE:")
-	fmt.Println("  Historical data is logged to /var/log/apache2buddy.log")
+	fmt.Println("  Historical data is logged to /var/log/apache2buddy-go.log")
 	fmt.Println()
 }
 
+func showHistory(count int) {
+	fmt.Printf("apache2buddy-go Historical Log (last %d entries)\n", count)
+	fmt.Println(strings.Repeat("=", 60))
+
+	entries, err := logs.GetRecentLogEntries(count)
+	if err != nil {
+		fmt.Printf("Error reading log file: %v\n", err)
+		fmt.Println("Make sure /var/log/apache2buddy-go.log exists and is readable.")
+		return
+	}
+
+	if len(entries) == 0 {
+		fmt.Println("No log entries found.")
+		fmt.Println("Run apache2buddy-go at least once to generate log entries.")
+		return
+	}
+
+	for _, entry := range entries {
+		fmt.Println(entry)
+	}
+
+	fmt.Printf("\nShowing %d of %d available entries.\n", len(entries), len(entries))
+	fmt.Println("Use -history with a larger number to see more entries.")
+}
+
 func showVersion() {
-	fmt.Println("Apache2Buddy Go - Enhanced Version")
-	fmt.Println("Version: 2.0.0-go")
+	fmt.Println("apache2buddy-go")
+	fmt.Println("Version: 1.0.0")
 	fmt.Println("Based on apache2buddy.pl by Richard Petersen")
 	fmt.Println("Go implementation with enhanced features")
 	fmt.Println()

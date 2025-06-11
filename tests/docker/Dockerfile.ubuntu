@@ -1,0 +1,39 @@
+# Ubuntu Apache2 with apache2buddy-go integration test
+FROM ubuntu/apache2:2.4-22.04_beta
+
+# Install dependencies for apache2buddy-go
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    procps \
+    grep \
+    gawk \
+    sed \
+    golang-go \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy apache2buddy-go source
+COPY . /opt/apache2buddy-go/
+WORKDIR /opt/apache2buddy-go
+
+# Build apache2buddy-go
+RUN CGO_ENABLED=0 go build -o /usr/local/bin/apache2buddy-go .
+
+# Configure Apache with mod_status
+RUN a2enmod status && \
+    a2enmod rewrite
+
+# Copy Apache configuration files
+COPY tests/apache-config/ubuntu-apache2.conf /etc/apache2/sites-available/000-default.conf
+COPY tests/apache-config/status.conf /etc/apache2/mods-available/status.conf
+
+# Enable mod_status configuration
+RUN echo "Include /etc/apache2/mods-available/status.conf" >> /etc/apache2/apache2.conf && \
+    echo "ExtendedStatus On" >> /etc/apache2/apache2.conf
+
+EXPOSE 80
+
+# Just run Apache normally - tests will be run via docker exec
+CMD ["apache2ctl", "-D", "FOREGROUND"]

@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"apache2buddy/internal/analysis"
-	"apache2buddy/internal/config"
-	"apache2buddy/internal/system"
+	"apache2buddy-go/internal/analysis"
+	"apache2buddy-go/internal/config"
+	"apache2buddy-go/internal/system"
 )
 
 type LogAnalysis struct {
@@ -77,8 +77,8 @@ func isReadableLogFile(logPath string) bool {
 		}
 
 		// Skip if symlinked to stdout/stderr/dev devices
-		if linkTarget == "/dev/stdout" || linkTarget == "/dev/stderr" || 
-		   linkTarget == "/dev/null" || strings.HasPrefix(linkTarget, "/dev/") {
+		if linkTarget == "/dev/stdout" || linkTarget == "/dev/stderr" ||
+			linkTarget == "/dev/null" || strings.HasPrefix(linkTarget, "/dev/") {
 			fmt.Printf("Note: Apache logs are redirected to %s (containerized setup) - log analysis skipped\n", linkTarget)
 			return false
 		}
@@ -158,7 +158,7 @@ func CreateLogEntry(sysInfo *system.SystemInfo, memStats *analysis.MemoryStats, 
 }
 
 func createLogEntryInternal(sysInfo *system.SystemInfo, memStats *analysis.MemoryStats, config *config.ApacheConfig, recommendations *analysis.Recommendations) error {
-	logFile := "/var/log/apache2buddy.log"
+	logFile := "/var/log/apache2buddy-go.log"
 
 	file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -194,7 +194,7 @@ func GetRecentLogEntries(count int) ([]string, error) {
 	errChan := make(chan error, 1)
 
 	go func() {
-		logFile := "/var/log/apache2buddy.log"
+		logFile := "/var/log/apache2buddy-go.log"
 
 		file, err := os.Open(logFile)
 		if err != nil {

@@ -1,0 +1,49 @@
+services:
+  # Apache HTTPD with apache2buddy-go installed
+  apache-httpd-test:
+    build:
+      context: .
+      dockerfile: tests/docker/Dockerfile.httpd
+    container_name: apache2buddy-test-httpd
+    ports:
+      - "8080:80"
+    networks:
+      - apache2buddy-test
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/server-status?auto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Ubuntu Apache2 with apache2buddy-go installed  
+  apache-ubuntu-test:
+    build:
+      context: .
+      dockerfile: tests/docker/Dockerfile.ubuntu
+    container_name: apache2buddy-test-ubuntu
+    ports:
+      - "8081:80"
+    networks:
+      - apache2buddy-test
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/server-status?auto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Simple unit test runner
+  unit-tests:
+    image: golang:1.21-alpine
+    container_name: apache2buddy-unit-tests
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: >
+      sh -c "
+        echo '📋 Running unit tests...' &&
+        go test -v ./...
+      "
+
+networks:
+  apache2buddy-test:
+    driver: bridge

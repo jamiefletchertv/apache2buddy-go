@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"apache2buddy/internal/debug"
+	"apache2buddy-go/internal/debug"
 )
 
 type ApacheConfig struct {

@@ -1,0 +1,30 @@
+# Apache HTTPD with apache2buddy-go integration test
+FROM httpd:2.4-alpine
+
+# Install dependencies for apache2buddy-go
+RUN apk add --no-cache \
+    bash \
+    curl \
+    wget \
+    procps \
+    grep \
+    gawk \
+    sed \
+    go \
+    git
+
+# Copy apache2buddy-go source
+COPY . /opt/apache2buddy-go/
+WORKDIR /opt/apache2buddy-go
+
+# Build apache2buddy-go
+RUN CGO_ENABLED=0 go build -o /usr/local/bin/apache2buddy-go .
+
+# Copy Apache configuration with mod_status enabled
+COPY tests/apache-config/httpd.conf /usr/local/apache2/conf/httpd.conf
+COPY tests/apache-config/mod_status.conf /usr/local/apache2/conf/extra/mod_status.conf
+
+EXPOSE 80
+
+# Just run Apache normally - tests will be run via docker exec
+CMD ["httpd-foreground"]

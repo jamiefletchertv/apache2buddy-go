@@ -1,0 +1,46 @@
+# CentOS Stream with Apache (httpd) integration test
+FROM quay.io/centos/centos:stream9
+
+# Install dependencies and Apache
+RUN dnf update -y && \
+    dnf install -y \
+    curl \
+    wget \
+    procps-ng \
+    grep \
+    gawk \
+    sed \
+    golang \
+    git \
+    httpd \
+    httpd-devel \
+    && dnf clean all
+
+# Copy apache2buddy-go source
+COPY . /opt/apache2buddy-go/
+WORKDIR /opt/apache2buddy-go
+
+# Build apache2buddy-go
+RUN CGO_ENABLED=0 go build -o /usr/local/bin/apache2buddy-go .
+
+# Configure Apache with mod_status
+RUN echo "LoadModule status_module modules/mod_status.so" >> /etc/httpd/conf/httpd.conf && \
+    echo "ExtendedStatus On" >> /etc/httpd/conf/httpd.conf && \
+    echo "<Location \"/server-status\">" >> /etc/httpd/conf/httpd.conf && \
+    echo "    SetHandler server-status" >> /etc/httpd/conf/httpd.conf && \
+    echo "    Require all granted" >> /etc/httpd/conf/httpd.conf && \
+    echo "</Location>" >> /etc/httpd/conf/httpd.conf
+
+# Configure prefork MPM
+RUN echo "<IfModule mpm_prefork_module>" >> /etc/httpd/conf/httpd.conf && \
+    echo "    StartServers 2" >> /etc/httpd/conf/httpd.conf && \
+    echo "    MinSpareServers 2" >> /etc/httpd/conf/httpd.conf && \
+    echo "    MaxSpareServers 5" >> /etc/httpd/conf/httpd.conf && \
+    echo "    MaxRequestWorkers 20" >> /etc/httpd/conf/httpd.conf && \
+    echo "    MaxConnectionsPerChild 1000" >> /etc/httpd/conf/httpd.conf && \
+    echo "</IfModule>" >> /etc/httpd/conf/httpd.conf
+
+EXPOSE 80
+
+# Run Apache in foreground
+CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]

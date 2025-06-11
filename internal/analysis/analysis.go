@@ -1,9 +1,9 @@
 package analysis
 
 import (
-	"apache2buddy/internal/config"
-	"apache2buddy/internal/process"
-	"apache2buddy/internal/system"
+	"apache2buddy-go/internal/config"
+	"apache2buddy-go/internal/process"
+	"apache2buddy-go/internal/system"
 )
 
 type MemoryStats struct {
