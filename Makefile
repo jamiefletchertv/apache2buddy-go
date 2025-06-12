@@ -87,14 +87,14 @@ docker-test: docker-build-containers docker-run-tests docker-integration-tests d
 docker-build-containers:
 	@echo "Building Apache containers with apache2buddy-go..."
 	@command -v docker-compose >/dev/null 2>&1 || { echo "docker-compose not found. Please install Docker Compose."; exit 1; }
-	docker-compose -f docker-compose.test.yml build apache-httpd-test apache-ubuntu-test
+	docker-compose -f docker-compose.test.yml build apache-httpd-test apache-ubuntu-test apache-centos-test apache-rocky-test apache-alma-test
 
 ## docker-run-tests: Run unit tests and start Apache containers
 docker-run-tests:
 	@echo "Running unit tests..."
 	docker-compose -f docker-compose.test.yml run --rm unit-tests
 	@echo "Starting Apache containers..."
-	docker-compose -f docker-compose.test.yml up -d apache-httpd-test apache-ubuntu-test
+	docker-compose -f docker-compose.test.yml up -d apache-httpd-test apache-ubuntu-test apache-centos-test apache-rocky-test apache-alma-test
 	@echo "Waiting for Apache containers to be healthy..."
 	@timeout=60; count=0; \
 	while [ $$count -lt $$timeout ]; do \
@@ -121,6 +121,42 @@ docker-run-tests:
 	if [ $$count -eq $$timeout ]; then \
 		echo "⚠️  Ubuntu container not healthy (may be expected)"; \
 	fi
+	@timeout=60; count=0; \
+	while [ $$count -lt $$timeout ]; do \
+		if docker exec apache2buddy-test-centos curl -f http://localhost/server-status?auto 2>/dev/null; then \
+			echo "✅ CentOS container is healthy"; \
+			break; \
+		fi; \
+		sleep 2; \
+		count=$$((count + 1)); \
+	done; \
+	if [ $$count -eq $$timeout ]; then \
+		echo "⚠️  CentOS container not healthy (may be expected)"; \
+	fi
+	@timeout=60; count=0; \
+	while [ $$count -lt $$timeout ]; do \
+		if docker exec apache2buddy-test-rocky curl -f http://localhost/server-status?auto 2>/dev/null; then \
+			echo "✅ Rocky container is healthy"; \
+			break; \
+		fi; \
+		sleep 2; \
+		count=$$((count + 1)); \
+	done; \
+	if [ $$count -eq $$timeout ]; then \
+		echo "⚠️  Rocky container not healthy (may be expected)"; \
+	fi
+	@timeout=60; count=0; \
+	while [ $$count -lt $$timeout ]; do \
+		if docker exec apache2buddy-test-alma curl -f http://localhost/server-status?auto 2>/dev/null; then \
+			echo "✅ AlmaLinux container is healthy"; \
+			break; \
+		fi; \
+		sleep 2; \
+		count=$$((count + 1)); \
+	done; \
+	if [ $$count -eq $$timeout ]; then \
+		echo "⚠️  AlmaLinux container not healthy (may be expected)"; \
+	fi
 
 ## docker-integration-tests: Run apache2buddy-go inside each container
 docker-integration-tests:
@@ -134,12 +170,30 @@ docker-integration-tests:
 	else \
 		echo "⚠️  Ubuntu integration test failed (may be expected)"; \
 	fi
+	@echo "🧪 Testing CentOS container..."
+	@if docker exec apache2buddy-test-centos apache2buddy-go; then \
+		echo "✅ CentOS integration test passed"; \
+	else \
+		echo "⚠️  CentOS integration test failed (may be expected)"; \
+	fi
+	@echo "🧪 Testing Rocky Linux container..."
+	@if docker exec apache2buddy-test-rocky apache2buddy-go; then \
+		echo "✅ Rocky Linux integration test passed"; \
+	else \
+		echo "⚠️  Rocky Linux integration test failed (may be expected)"; \
+	fi
+	@echo "🧪 Testing AlmaLinux container..."
+	@if docker exec apache2buddy-test-alma apache2buddy-go; then \
+		echo "✅ AlmaLinux integration test passed"; \
+	else \
+		echo "⚠️  AlmaLinux integration test failed (may be expected)"; \
+	fi
 
 ## docker-up: Start Docker services for integration tests
 docker-up:
 	@echo "Starting Docker services for integration tests..."
 	@command -v docker-compose >/dev/null 2>&1 || { echo "docker-compose not found. Please install Docker Compose."; exit 1; }
-	docker-compose -f docker-compose.test.yml up -d apache-httpd-test apache-ubuntu-test
+	docker-compose -f docker-compose.test.yml up -d apache-httpd-test apache-ubuntu-test apache-centos-test apache-rocky-test apache-alma-test
 
 ## docker-down: Stop Docker services
 docker-down:
@@ -152,11 +206,17 @@ docker-logs:
 	docker-compose -f docker-compose.test.yml logs apache-httpd-test || true
 	@echo "=== Ubuntu Apache Logs ==="
 	docker-compose -f docker-compose.test.yml logs apache-ubuntu-test || true
+	@echo "=== CentOS Apache Logs ==="
+	docker-compose -f docker-compose.test.yml logs apache-centos-test || true
+	@echo "=== Rocky Linux Apache Logs ==="
+	docker-compose -f docker-compose.test.yml logs apache-rocky-test || true
+	@echo "=== AlmaLinux Apache Logs ==="
+	docker-compose -f docker-compose.test.yml logs apache-alma-test || true
 
 ## docker-logs-follow: Follow Docker container logs in real-time
 docker-logs-follow:
 	@echo "Following Docker container logs (Ctrl+C to stop)..."
-	docker-compose -f docker-compose.test.yml logs -f apache-httpd-test apache-ubuntu-test
+	docker-compose -f docker-compose.test.yml logs -f apache-httpd-test apache-ubuntu-test apache-centos-test apache-rocky-test apache-alma-test
 
 ## docker-status: Show status of Docker containers
 docker-status:

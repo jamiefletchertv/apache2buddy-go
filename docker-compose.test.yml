@@ -31,6 +31,54 @@ services:
       timeout: 5s
       retries: 5
 
+  # CentOS Stream with httpd
+  apache-centos-test:
+    build:
+      context: .
+      dockerfile: tests/docker/Dockerfile.centos
+    container_name: apache2buddy-test-centos
+    ports:
+      - "8082:80"
+    networks:
+      - apache2buddy-test
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/server-status?auto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Rocky Linux with httpd
+  apache-rocky-test:
+    build:
+      context: .
+      dockerfile: tests/docker/Dockerfile.rocky
+    container_name: apache2buddy-test-rocky
+    ports:
+      - "8083:80"
+    networks:
+      - apache2buddy-test
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/server-status?auto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # AlmaLinux with httpd
+  apache-alma-test:
+    build:
+      context: .
+      dockerfile: tests/docker/Dockerfile.alma
+    container_name: apache2buddy-test-alma
+    ports:
+      - "8084:80"
+    networks:
+      - apache2buddy-test
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/server-status?auto"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Simple unit test runner
   unit-tests:
     image: golang:1.21-alpine

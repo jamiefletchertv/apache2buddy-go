@@ -1,5 +1,5 @@
-# CentOS Stream with Apache (httpd) integration test
-FROM quay.io/centos/centos:stream9
+# AlmaLinux with Apache (httpd) integration test
+FROM almalinux:9
 
 # Install dependencies and Apache
 RUN dnf update -y && \
@@ -31,16 +31,19 @@ RUN echo "LoadModule status_module modules/mod_status.so" >> /etc/httpd/conf/htt
     echo "    Require all granted" >> /etc/httpd/conf/httpd.conf && \
     echo "</Location>" >> /etc/httpd/conf/httpd.conf
 
-# Configure prefork MPM
-RUN echo "<IfModule mpm_prefork_module>" >> /etc/httpd/conf/httpd.conf && \
+# Configure worker MPM for variety (unload default event MPM first)
+RUN sed -i 's/^LoadModule mpm_event_module/#LoadModule mpm_event_module/' /etc/httpd/conf.modules.d/00-mpm.conf && \
+    sed -i 's/^#LoadModule mpm_worker_module/LoadModule mpm_worker_module/' /etc/httpd/conf.modules.d/00-mpm.conf && \
+    echo "<IfModule mpm_worker_module>" >> /etc/httpd/conf/httpd.conf && \
     echo "    StartServers 2" >> /etc/httpd/conf/httpd.conf && \
-    echo "    MinSpareServers 2" >> /etc/httpd/conf/httpd.conf && \
-    echo "    MaxSpareServers 5" >> /etc/httpd/conf/httpd.conf && \
-    echo "    MaxRequestWorkers 20" >> /etc/httpd/conf/httpd.conf && \
+    echo "    MinSpareThreads 5" >> /etc/httpd/conf/httpd.conf && \
+    echo "    MaxSpareThreads 10" >> /etc/httpd/conf/httpd.conf && \
+    echo "    ThreadsPerChild 5" >> /etc/httpd/conf/httpd.conf && \
+    echo "    MaxRequestWorkers 30" >> /etc/httpd/conf/httpd.conf && \
     echo "    MaxConnectionsPerChild 1000" >> /etc/httpd/conf/httpd.conf && \
     echo "</IfModule>" >> /etc/httpd/conf/httpd.conf
 
 EXPOSE 80
 
-# Run Apache in foreground
+# Run Apache in foreground  
 CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]

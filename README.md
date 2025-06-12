@@ -1,5 +1,11 @@
 # Apache2buddy-go
 
+[![CI](https://github.com/jamiefletcherdev/apache2buddy-go/workflows/CI/badge.svg)](https://github.com/jamiefletcherdev/apache2buddy-go/actions)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jamiefletcherdev/apache2buddy-go)](https://goreportcard.com/report/github.com/jamiefletcherdev/apache2buddy-go)
+[![codecov](https://codecov.io/gh/jamiefletcherdev/apache2buddy-go/branch/main/graph/badge.svg)](https://codecov.io/gh/jamiefletcherdev/apache2buddy-go)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/jamiefletcherdev/apache2buddy-go)](https://golang.org/)
+
 Apache2buddy-go is a Go rewrite of the popular Perl script that analyzes your Apache HTTP Server configuration and provides actionable recommendations for memory optimization and performance tuning.
 
 **⚠️ SECURITY NOTICE: This tool requires root privileges and should only be run on systems you own and control. Review the source code before building and running. Use at your own risk.**
@@ -243,6 +249,74 @@ This Go implementation includes several enhancements:
 - **Structured Logging**: JSON-compatible log format
 - **Extended Debug Mode**: More detailed troubleshooting information
 - **Cross-Platform**: Better support for different Linux distributions
+
+## Testing
+
+Apache2buddy-go has comprehensive test coverage including unit tests and integration tests across multiple platforms.
+
+### Running Tests
+
+```bash
+# Run unit tests
+make test
+
+# Run tests with coverage
+make test-cover
+
+# Run tests with race detector
+make test-race
+
+# Run all tests including integration tests
+make test-all
+
+# Run benchmarks
+make benchmarks
+```
+
+### Integration Tests
+
+The project includes Docker-based integration tests that verify apache2buddy-go works correctly across different Apache configurations and operating systems:
+
+- **Alpine Linux** (httpd): prefork MPM
+- **Ubuntu** (apache2): event MPM  
+- **CentOS Stream 9** (httpd): event MPM
+- **Rocky Linux 9** (httpd): event MPM
+- **AlmaLinux 9** (httpd): worker MPM
+
+```bash
+# Run integration tests
+make docker-test
+
+# Run integration tests only (containers must be running)
+make docker-integration-tests
+
+# View container logs
+make docker-logs
+
+# Check container status
+make docker-status
+```
+
+### Test Coverage
+
+The test suite covers:
+
+- **Unit Tests**: All internal packages with table-driven tests
+- **Integration Tests**: Real Apache containers with mod_status
+- **Benchmark Tests**: Performance testing of critical functions
+- **Cross-Platform Builds**: Linux, macOS, FreeBSD on amd64/arm64
+- **Multiple Go Versions**: 1.19, 1.20, 1.21
+
+### Continuous Integration
+
+GitHub Actions automatically runs the full test suite on every push and pull request:
+
+- **Unit Tests**: Run across Go 1.19, 1.20, and 1.21
+- **Integration Tests**: Docker-based tests with 5 different Apache configurations
+- **Linting**: golangci-lint with comprehensive rules
+- **Security Scanning**: gosec security analysis
+- **Cross-Platform Builds**: Verify builds work on all supported platforms
+- **Code Coverage**: Automatic coverage reporting via Codecov
 
 ## Contributing
 

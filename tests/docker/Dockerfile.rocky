@@ -1,5 +1,5 @@
-# CentOS Stream with Apache (httpd) integration test
-FROM quay.io/centos/centos:stream9
+# Rocky Linux with Apache (httpd) integration test  
+FROM rockylinux:9
 
 # Install dependencies and Apache
 RUN dnf update -y && \
@@ -31,12 +31,12 @@ RUN echo "LoadModule status_module modules/mod_status.so" >> /etc/httpd/conf/htt
     echo "    Require all granted" >> /etc/httpd/conf/httpd.conf && \
     echo "</Location>" >> /etc/httpd/conf/httpd.conf
 
-# Configure prefork MPM
+# Configure prefork MPM for testing
 RUN echo "<IfModule mpm_prefork_module>" >> /etc/httpd/conf/httpd.conf && \
     echo "    StartServers 2" >> /etc/httpd/conf/httpd.conf && \
     echo "    MinSpareServers 2" >> /etc/httpd/conf/httpd.conf && \
     echo "    MaxSpareServers 5" >> /etc/httpd/conf/httpd.conf && \
-    echo "    MaxRequestWorkers 20" >> /etc/httpd/conf/httpd.conf && \
+    echo "    MaxRequestWorkers 25" >> /etc/httpd/conf/httpd.conf && \
     echo "    MaxConnectionsPerChild 1000" >> /etc/httpd/conf/httpd.conf && \
     echo "</IfModule>" >> /etc/httpd/conf/httpd.conf
 
