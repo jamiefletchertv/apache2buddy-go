@@ -208,7 +208,7 @@ ReqPerSec: 1.5`,
 			// Create test server
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.statusCode)
-				w.Write([]byte(tt.response))
+				_, _ = w.Write([]byte(tt.response))
 			}))
 			defer server.Close()
 
@@ -500,7 +500,7 @@ Load15: 0.6`
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		parseStatus(content)
+		_, _ = parseStatus(content)
 	}
 }
 

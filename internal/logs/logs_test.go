@@ -39,12 +39,12 @@ func TestIsReadableLogFile(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Failed to create temp file: %v", err)
 				}
-				tmpFile.WriteString("test log content\n")
-				tmpFile.Close()
+				_, _ = tmpFile.WriteString("test log content\n")
+				_ = tmpFile.Close()
 				return tmpFile.Name()
 			},
 			cleanup: func(path string) {
-				os.Remove(path)
+				_ = os.Remove(path)
 			},
 			expected: true,
 		},
@@ -173,14 +173,14 @@ func TestAnalyzeLogFile(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to create temp file: %v", err)
 			}
-			defer os.Remove(tmpFile.Name())
+			defer func() { _ = os.Remove(tmpFile.Name()) }()
 
 			// Write test content
 			_, err = tmpFile.WriteString(tt.content)
 			if err != nil {
 				t.Fatalf("Failed to write test content: %v", err)
 			}
-			tmpFile.Close()
+			_ = tmpFile.Close()
 
 			// Analyze the log file
 			analysis := &LogAnalysis{}
@@ -258,6 +258,7 @@ func TestAnalyzeApacheLogsTimeout(t *testing.T) {
 	// Should return a valid analysis struct even if no logs are found
 	if analysis == nil {
 		t.Error("AnalyzeApacheLogs should never return nil")
+		return
 	}
 
 	if analysis.AnalyzedLines < 0 {
@@ -272,7 +273,7 @@ func BenchmarkAnalyzeLogFile(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create temp file: %v", err)
 	}
-	defer os.Remove(tmpFile.Name())
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
 
 	// Write realistic log content
 	content := strings.Repeat(`[Mon Dec 05 10:15:30 2023] [error] server reached MaxRequestWorkers setting
@@ -284,12 +285,12 @@ func BenchmarkAnalyzeLogFile(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to write test content: %v", err)
 	}
-	tmpFile.Close()
+	_ = tmpFile.Close()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		analysis := &LogAnalysis{}
-		analyzeLogFile(tmpFile.Name(), analysis)
+		_ = analyzeLogFile(tmpFile.Name(), analysis)
 	}
 }
 
@@ -299,8 +300,8 @@ func BenchmarkIsReadableLogFile(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to create temp file: %v", err)
 	}
-	tmpFile.Close()
-	defer os.Remove(tmpFile.Name())
+	_ = tmpFile.Close()
+	defer func() { _ = os.Remove(tmpFile.Name()) }()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

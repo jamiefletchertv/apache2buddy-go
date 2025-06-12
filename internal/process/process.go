@@ -25,60 +25,6 @@ func FindApacheProcesses() ([]ProcessInfo, error) {
 	return parseAuxFormat(string(output))
 }
 
-func parseStandardFormat(output string) ([]ProcessInfo, error) {
-	var processes []ProcessInfo
-	lines := strings.Split(string(output), "\n")
-
-	for _, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-
-		// Skip header line (PID USER COMM)
-		if strings.Contains(line, "PID") && strings.Contains(line, "USER") {
-			continue
-		}
-
-		// Parse ps output: PID USER COMMAND
-		fields := strings.Fields(line)
-		if len(fields) < 3 {
-			continue
-		}
-
-		pid, err := strconv.Atoi(fields[0])
-		if err != nil {
-			continue
-		}
-
-		user := fields[1]
-		comm := fields[2]
-
-		// Check if this is an Apache process
-		if !isApacheProcess(comm) {
-			continue
-		}
-
-		// Skip root processes (master processes)
-		if user == "root" {
-			continue
-		}
-
-		// Get memory for this process
-		memory, err := getProcessMemory(pid)
-		if err != nil {
-			continue
-		}
-
-		processes = append(processes, ProcessInfo{
-			PID:      pid,
-			User:     user,
-			MemoryMB: memory,
-		})
-	}
-
-	return processes, nil
-}
 
 func parseAuxFormat(output string) ([]ProcessInfo, error) {
 	var processes []ProcessInfo

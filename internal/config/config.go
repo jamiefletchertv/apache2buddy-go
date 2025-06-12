@@ -68,7 +68,7 @@ func Parse() (*ApacheConfig, error) {
 
 	if configPath == "" {
 		debug.Error(fmt.Errorf("no config file found"), "config file search")
-		return config, fmt.Errorf("Apache config file not found")
+		return config, fmt.Errorf("apache config file not found")
 	}
 
 	config.ConfigPath = configPath

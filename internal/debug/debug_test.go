@@ -256,8 +256,8 @@ func TestDumpFileInfo(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp file: %v", err)
 	}
-	defer os.Remove(tempFile.Name())
-	tempFile.Close()
+	defer func() { _ = os.Remove(tempFile.Name()) }()
+	_ = tempFile.Close()
 
 	DumpFileInfo(tempFile.Name())
 	output := buf.String()

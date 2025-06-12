@@ -255,7 +255,7 @@ func BenchmarkParseConfigFile(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		config := &ApacheConfig{MPMModel: "prefork"}
-		parseConfigFile(config, configPath)
+		_ = parseConfigFile(config, configPath)
 	}
 }
 

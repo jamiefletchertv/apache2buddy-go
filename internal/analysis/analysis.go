@@ -124,7 +124,7 @@ func GenerateEnhancedRecommendations(sysInfo *system.SystemInfo, memStats *Memor
 
 	// Enhanced status determination
 	var status, message, mpmNote string
-	vhostWarning := false
+	var vhostWarning bool
 
 	// Check virtual host vs MaxClients relationship
 	if vhostCount > maxRecommended {
