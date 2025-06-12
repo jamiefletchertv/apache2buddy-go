@@ -162,7 +162,7 @@ ServerName example.com`,
 
 func TestGetDefaults(t *testing.T) {
 	config := GetDefaults()
-	
+
 	if config.MaxClients != 256 {
 		t.Errorf("Default MaxClients = %d, want 256", config.MaxClients)
 	}
@@ -227,7 +227,7 @@ func TestExtractIncludePath(t *testing.T) {
 func BenchmarkParseConfigFile(b *testing.B) {
 	tempDir := b.TempDir()
 	configPath := filepath.Join(tempDir, "bench.conf")
-	
+
 	content := `
 <IfModule mpm_prefork_module>
     StartServers 8
@@ -246,7 +246,7 @@ func BenchmarkParseConfigFile(b *testing.B) {
     MaxConnectionsPerChild 10000
 </IfModule>
 `
-	
+
 	err := os.WriteFile(configPath, []byte(content), 0644)
 	if err != nil {
 		b.Fatalf("Failed to create benchmark config file: %v", err)
@@ -264,7 +264,7 @@ func BenchmarkGetCurrentMaxClients(b *testing.B) {
 		MaxRequestWorkers: 150,
 		MaxClients:        100,
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		config.GetCurrentMaxClients()

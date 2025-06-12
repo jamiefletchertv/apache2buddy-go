@@ -71,7 +71,7 @@ func TestSection(t *testing.T) {
 	Enable()
 	Section("TEST SECTION")
 	output := buf.String()
-	
+
 	if !strings.Contains(output, "TEST SECTION") {
 		t.Errorf("Section output should contain section title, got: %s", output)
 	}
@@ -92,18 +92,18 @@ func TestTimer(t *testing.T) {
 	debugLogger = log.New(&buf, "[DEBUG] ", log.LstdFlags)
 
 	Enable()
-	
+
 	timer := StartTimer("Test Operation")
 	if timer == nil {
 		t.Error("StartTimer should return a non-nil timer")
 	}
-	
+
 	// Small delay to ensure measurable time
 	time.Sleep(1 * time.Millisecond)
-	
+
 	timer.Stop()
 	output := buf.String()
-	
+
 	if !strings.Contains(output, "Starting timer: Test Operation") {
 		t.Errorf("Timer output should contain start message, got: %s", output)
 	}
@@ -124,14 +124,14 @@ func TestTrace(t *testing.T) {
 	debugLogger = log.New(&buf, "[DEBUG] ", log.LstdFlags)
 
 	Enable()
-	
+
 	func() {
 		defer Trace("TestFunction")()
 		// Function body
 	}()
-	
+
 	output := buf.String()
-	
+
 	if !strings.Contains(output, "ENTER: TestFunction") {
 		t.Errorf("Trace output should contain enter message, got: %s", output)
 	}
@@ -158,7 +158,7 @@ func TestDumpMethods(t *testing.T) {
 		Name string
 		Age  int
 	}{"Test", 25}
-	
+
 	DumpStruct("TestStruct", testStruct)
 	output := buf.String()
 	if !strings.Contains(output, "TestStruct") {
@@ -196,11 +196,11 @@ func TestError(t *testing.T) {
 	debugLogger = log.New(&buf, "[DEBUG] ", log.LstdFlags)
 
 	Enable()
-	
+
 	testErr := &testError{"test error"}
 	Error(testErr, "test context")
 	output := buf.String()
-	
+
 	if !strings.Contains(output, "ERROR in test context") {
 		t.Errorf("Error output should contain context, got: %s", output)
 	}
@@ -221,7 +221,7 @@ func TestWarnInfo(t *testing.T) {
 	debugLogger = log.New(&buf, "[DEBUG] ", log.LstdFlags)
 
 	Enable()
-	
+
 	// Test Warn
 	Warn("Warning message: %s", "test")
 	output := buf.String()
@@ -250,7 +250,7 @@ func TestDumpFileInfo(t *testing.T) {
 	debugLogger = log.New(&buf, "[DEBUG] ", log.LstdFlags)
 
 	Enable()
-	
+
 	// Test with existing file
 	tempFile, err := os.CreateTemp("", "test_debug_*.txt")
 	if err != nil {
@@ -286,7 +286,7 @@ func TestDumpCommandOutput(t *testing.T) {
 	debugLogger = log.New(&buf, "[DEBUG] ", log.LstdFlags)
 
 	Enable()
-	
+
 	// Test successful command
 	DumpCommandOutput("test", []string{"-v"}, []byte("test output"), nil)
 	output := buf.String()
@@ -350,7 +350,7 @@ func (e *testError) Error() string {
 func BenchmarkPrintf(b *testing.B) {
 	Enable()
 	defer Disable()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		Printf("Benchmark message %d", i)
@@ -360,7 +360,7 @@ func BenchmarkPrintf(b *testing.B) {
 func BenchmarkTimer(b *testing.B) {
 	Enable()
 	defer Disable()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		timer := StartTimer("Benchmark")
@@ -371,7 +371,7 @@ func BenchmarkTimer(b *testing.B) {
 func BenchmarkTrace(b *testing.B) {
 	Enable()
 	defer Disable()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		func() {

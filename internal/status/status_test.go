@@ -9,7 +9,7 @@ import (
 
 func TestApacheStatus_Initialization(t *testing.T) {
 	status := &ApacheStatus{}
-	
+
 	// Test that a new ApacheStatus has sensible defaults
 	if status.ActiveWorkers < 0 {
 		t.Error("ActiveWorkers should not be negative")
@@ -129,16 +129,16 @@ Nothing useful here`,
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := parseStatus(tt.content)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parseStatus() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if tt.wantErr {
 				return // Skip validation for error cases
 			}
-			
+
 			// Validate key fields
 			if got.ActiveWorkers != tt.expected.ActiveWorkers {
 				t.Errorf("ActiveWorkers = %d, want %d", got.ActiveWorkers, tt.expected.ActiveWorkers)
@@ -211,15 +211,15 @@ ReqPerSec: 1.5`,
 				w.Write([]byte(tt.response))
 			}))
 			defer server.Close()
-			
+
 			// Test fetchStatus
 			status, err := fetchStatus(server.URL)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("fetchStatus() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if !tt.wantErr && status == nil {
 				t.Error("fetchStatus() should return status when successful")
 			}
@@ -239,11 +239,11 @@ func TestParseWorkerStatus(t *testing.T) {
 <pre>_SSSS_WWWWKKKK</pre>
 </html>`,
 			expected: map[string]int{
-				"waiting":       2, // _
-				"starting":      4, // S
-				"sending":       4, // W  
-				"keepalive":     4, // K
-				"open_slot":     0,
+				"waiting":   2, // _
+				"starting":  4, // S
+				"sending":   4, // W
+				"keepalive": 4, // K
+				"open_slot": 0,
 			},
 		},
 		{
@@ -253,16 +253,16 @@ func TestParseWorkerStatus(t *testing.T) {
 <pre>_SSRRRWWWDDDCCCLLLOGGGIIIJJJPPPOOOOO......</pre>
 </html>`,
 			expected: map[string]int{
-				"waiting":          1,  // _ (1)
-				"starting":         2,  // S (2)
-				"reading":          3,  // R (3)
-				"sending":          3,  // W (3)
-				"dns_lookup":       3,  // D (3)
-				"closing":          3,  // C (3)
-				"logging":          3,  // L (3)
-				"graceful_finish":  6,  // G (3) + P (3)
-				"idle_cleanup":     6,  // I (3) + J (3)
-				"open_slot":        12, // O (6) + . (6)
+				"waiting":         1,  // _ (1)
+				"starting":        2,  // S (2)
+				"reading":         3,  // R (3)
+				"sending":         3,  // W (3)
+				"dns_lookup":      3,  // D (3)
+				"closing":         3,  // C (3)
+				"logging":         3,  // L (3)
+				"graceful_finish": 6,  // G (3) + P (3)
+				"idle_cleanup":    6,  // I (3) + J (3)
+				"open_slot":       12, // O (6) + . (6)
 			},
 		},
 		{
@@ -271,9 +271,9 @@ func TestParseWorkerStatus(t *testing.T) {
 <tt>____SSSSRRRR</tt>
 </html>`,
 			expected: map[string]int{
-				"waiting":  4,  // _
-				"starting": 4,  // S
-				"reading":  4,  // R
+				"waiting":  4, // _
+				"starting": 4, // S
+				"reading":  4, // R
 			},
 		},
 		{
@@ -291,7 +291,7 @@ func TestParseWorkerStatus(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := ParseWorkerStatus(tt.html)
-			
+
 			for key, expected := range tt.expected {
 				if got[key] != expected {
 					t.Errorf("ParseWorkerStatus()[%s] = %d, want %d", key, got[key], expected)
@@ -354,11 +354,11 @@ GET /index.php 10.0.0.1
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := parseTopClients(tt.html)
-			
+
 			if len(got) != tt.expected {
 				t.Errorf("parseTopClients() returned %d clients, want %d", len(got), tt.expected)
 			}
-			
+
 			// Validate client structure
 			for _, client := range got {
 				if client.IP == "" {
@@ -406,11 +406,11 @@ func TestIsLocalIP(t *testing.T) {
 func TestDetectServerVersion(t *testing.T) {
 	// This test checks that the function doesn't crash and returns a string
 	version := detectServerVersion()
-	
+
 	if version == "" {
 		t.Error("detectServerVersion should return a non-empty string")
 	}
-	
+
 	// Should return "Unknown" when no Apache is found in test environment
 	if version != "Unknown" {
 		t.Logf("Detected server version: %s", version)
@@ -424,18 +424,18 @@ func TestExtractUniqueClients(t *testing.T) {
 		expected int
 	}{
 		{
-			name: "HTML with requests being processed",
-			html: `<html><body>5 requests being processed, 10 idle workers</body></html>`,
+			name:     "HTML with requests being processed",
+			html:     `<html><body>5 requests being processed, 10 idle workers</body></html>`,
 			expected: 5,
 		},
 		{
-			name: "HTML with async connections",
-			html: `<html><body>Async connections: total: 15</body></html>`,
+			name:     "HTML with async connections",
+			html:     `<html><body>Async connections: total: 15</body></html>`,
 			expected: 15,
 		},
 		{
-			name: "HTML with ConnsTotal",
-			html: `<html><body>ConnsTotal: 25</body></html>`,
+			name:     "HTML with ConnsTotal",
+			html:     `<html><body>ConnsTotal: 25</body></html>`,
 			expected: 25,
 		},
 		{
@@ -464,18 +464,18 @@ func TestExtractUniqueClients(t *testing.T) {
 func TestGetApacheStatus(t *testing.T) {
 	// This will fail in test environment since no Apache mod_status is available
 	status, err := GetApacheStatus()
-	
+
 	if err != nil {
 		// Expected to fail in test environment
 		t.Logf("GetApacheStatus failed as expected in test environment: %v", err)
-		
+
 		// Error should mention mod_status
 		if !strings.Contains(err.Error(), "mod_status") {
 			t.Errorf("Error should mention mod_status, got: %v", err)
 		}
 		return
 	}
-	
+
 	// If somehow it succeeds, validate the structure
 	if status != nil {
 		if status.TotalSlots != status.ActiveWorkers+status.IdleWorkers {
@@ -506,7 +506,7 @@ Load15: 0.6`
 
 func BenchmarkParseWorkerStatus(b *testing.B) {
 	html := `<html><pre>_SSSS_WWWWKKKK_RRRR_DDDD_CCCC_LLLL</pre></html>`
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ParseWorkerStatus(html)
@@ -515,7 +515,7 @@ func BenchmarkParseWorkerStatus(b *testing.B) {
 
 func BenchmarkIsLocalIP(b *testing.B) {
 	ips := []string{"127.0.0.1", "192.168.1.100", "8.8.8.8", "203.0.113.1"}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, ip := range ips {

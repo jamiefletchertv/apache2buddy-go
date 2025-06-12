@@ -168,7 +168,7 @@ func isApacheCommand(command string) bool {
 	if strings.Contains(command, "apache2buddy") {
 		return false
 	}
-	
+
 	apacheIndicators := []string{
 		"httpd",
 		"apache2",
@@ -176,7 +176,7 @@ func isApacheCommand(command string) bool {
 		"/usr/sbin/apache2",
 		"/usr/local/apache2/bin/httpd",
 	}
-	
+
 	for _, indicator := range apacheIndicators {
 		if strings.Contains(command, indicator) {
 			return true

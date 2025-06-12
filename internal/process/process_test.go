@@ -51,9 +51,9 @@ func TestProcessInfo_Validation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Test basic validation logic
-			isValid := tt.process.PID > 0 && 
-					  tt.process.User != "" &&
-					  tt.process.MemoryMB >= 0
+			isValid := tt.process.PID > 0 &&
+				tt.process.User != "" &&
+				tt.process.MemoryMB >= 0
 
 			if isValid != tt.valid {
 				t.Errorf("Process validation = %v, want %v", isValid, tt.valid)
@@ -222,16 +222,16 @@ redis     1237  0.0  0.1  12345  6543 ?        S    10:00   0:00 /usr/bin/redis-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := parseAuxFormat(tt.output)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("parseAuxFormat() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if len(got) != tt.want {
 				t.Errorf("parseAuxFormat() returned %d processes, want %d", len(got), tt.want)
 			}
-			
+
 			// Validate that all returned processes are valid
 			for _, proc := range got {
 				if proc.PID <= 0 {
@@ -295,7 +295,7 @@ mapped: 123456K    shared: 12345K`,
 // Benchmark tests
 func BenchmarkIsApacheProcess(b *testing.B) {
 	commands := []string{"httpd", "apache2", "nginx", "mysqld", "httpd.worker"}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, cmd := range commands {
@@ -312,7 +312,7 @@ func BenchmarkIsApacheCommand(b *testing.B) {
 		"./apache2buddy-go -debug",
 		"/usr/local/apache2/bin/httpd",
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, cmd := range commands {

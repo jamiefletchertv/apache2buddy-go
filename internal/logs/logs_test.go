@@ -13,7 +13,7 @@ import (
 
 func TestLogAnalysis_Empty(t *testing.T) {
 	analysis := &LogAnalysis{}
-	
+
 	if analysis.MaxClientsExceeded != 0 {
 		t.Errorf("Empty LogAnalysis should have MaxClientsExceeded = 0, got %d", analysis.MaxClientsExceeded)
 	}
@@ -74,14 +74,14 @@ func TestIsReadableLogFile(t *testing.T) {
 			name: "symlink to regular file",
 			setup: func() string {
 				tmpDir := t.TempDir()
-				
+
 				// Create target file
 				targetPath := filepath.Join(tmpDir, "target.log")
 				err := os.WriteFile(targetPath, []byte("log content"), 0644)
 				if err != nil {
 					t.Fatalf("Failed to create target file: %v", err)
 				}
-				
+
 				// Create symlink
 				linkPath := filepath.Join(tmpDir, "link.log")
 				err = os.Symlink(targetPath, linkPath)
@@ -99,7 +99,7 @@ func TestIsReadableLogFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			filePath := tt.setup()
 			defer tt.cleanup(filePath)
-			
+
 			result := isReadableLogFile(filePath)
 			if result != tt.expected {
 				t.Errorf("isReadableLogFile(%s) = %v, want %v", filePath, result, tt.expected)
@@ -199,7 +199,7 @@ func TestAnalyzeLogFile(t *testing.T) {
 			if analysis.AnalyzedLines != tt.expected.AnalyzedLines {
 				t.Errorf("AnalyzedLines = %d, want %d", analysis.AnalyzedLines, tt.expected.AnalyzedLines)
 			}
-			
+
 			// Check recent errors (should match expected errors)
 			if len(analysis.RecentErrors) != len(tt.expected.RecentErrors) {
 				t.Errorf("RecentErrors length = %d, want %d", len(analysis.RecentErrors), len(tt.expected.RecentErrors))
@@ -221,7 +221,7 @@ func TestCreateLogEntryInternal(t *testing.T) {
 		AvailableMemoryMB: 1500,
 		OtherServices:     make(map[string]int),
 	}
-	
+
 	memStats := &analysis.MemoryStats{
 		SmallestMB:   20.5,
 		LargestMB:    35.2,
@@ -229,12 +229,12 @@ func TestCreateLogEntryInternal(t *testing.T) {
 		TotalMB:      278.0,
 		ProcessCount: 10,
 	}
-	
+
 	config := &config.ApacheConfig{
 		MaxRequestWorkers: 150,
 		MPMModel:          "prefork",
 	}
-	
+
 	recommendations := &analysis.Recommendations{
 		CurrentMaxClients:     150,
 		RecommendedMaxClients: 120,
@@ -254,12 +254,12 @@ func TestAnalyzeApacheLogsTimeout(t *testing.T) {
 	// Test that AnalyzeApacheLogs returns quickly even when no log files exist
 	// This tests the timeout functionality
 	analysis := AnalyzeApacheLogs()
-	
+
 	// Should return a valid analysis struct even if no logs are found
 	if analysis == nil {
 		t.Error("AnalyzeApacheLogs should never return nil")
 	}
-	
+
 	if analysis.AnalyzedLines < 0 {
 		t.Errorf("AnalyzedLines should not be negative, got %d", analysis.AnalyzedLines)
 	}

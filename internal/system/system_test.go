@@ -73,7 +73,7 @@ func TestDetectControlPanels(t *testing.T) {
 	// This test is environment-dependent, so we mainly test the function exists
 	// and returns a string (empty or with a control panel name)
 	result := DetectControlPanels()
-	
+
 	// Should return a string (could be empty if no control panels are detected)
 	if result != "" {
 		t.Logf("Control panel detected: %s", result)
@@ -129,9 +129,9 @@ func TestSystemInfoValidation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Test basic validation logic
-			isValid := tt.sysInfo.TotalMemoryMB > 0 && 
-					  tt.sysInfo.AvailableMemoryMB >= 0 &&
-					  tt.sysInfo.AvailableMemoryMB <= tt.sysInfo.TotalMemoryMB
+			isValid := tt.sysInfo.TotalMemoryMB > 0 &&
+				tt.sysInfo.AvailableMemoryMB >= 0 &&
+				tt.sysInfo.AvailableMemoryMB <= tt.sysInfo.TotalMemoryMB
 
 			if isValid != tt.valid {
 				t.Errorf("System info validation = %v, want %v", isValid, tt.valid)
@@ -179,7 +179,7 @@ func TestServiceMemoryCalculation(t *testing.T) {
 				AvailableMemoryMB: 1500,
 				OtherServices:     tt.services,
 			}
-			
+
 			result := GetTotalOtherServicesMemory(sysInfo)
 			if result != tt.expected {
 				t.Errorf("Service memory calculation = %d, want %d", result, tt.expected)

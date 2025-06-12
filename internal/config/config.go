@@ -26,7 +26,7 @@ type ApacheConfig struct {
 
 func (c *ApacheConfig) GetCurrentMaxClients() int {
 	defer debug.Trace("ApacheConfig.GetCurrentMaxClients")()
-	
+
 	if c.MaxRequestWorkers > 0 {
 		debug.Printf("Using MaxRequestWorkers: %d", c.MaxRequestWorkers)
 		return c.MaxRequestWorkers
@@ -41,7 +41,7 @@ func (c *ApacheConfig) GetCurrentMaxClients() int {
 
 func Parse() (*ApacheConfig, error) {
 	defer debug.Trace("config.Parse")()
-	
+
 	config := &ApacheConfig{
 		MPMModel: "prefork", // Default
 	}
@@ -95,7 +95,7 @@ func Parse() (*ApacheConfig, error) {
 func parseConfigFile(config *ApacheConfig, filePath string) error {
 	defer debug.Trace("parseConfigFile")()
 	debug.Printf("Parsing config file: %s", filePath)
-	
+
 	file, err := os.Open(filePath)
 	if err != nil {
 		debug.Error(err, "opening config file")
@@ -202,7 +202,7 @@ func parseConfigFile(config *ApacheConfig, filePath string) error {
 	}
 
 	debug.Printf("Config parsing complete: %d lines processed, %d directives found", lineCount, directivesFound)
-	
+
 	// If we didn't find MaxClients/MaxRequestWorkers, try to detect default values
 	if config.MaxClients == 0 && config.MaxRequestWorkers == 0 {
 		debug.Warn("No MaxClients or MaxRequestWorkers found in config file")
@@ -210,21 +210,21 @@ func parseConfigFile(config *ApacheConfig, filePath string) error {
 		debug.Printf("1. Values are in included files not being parsed")
 		debug.Printf("2. Using compiled-in defaults")
 		debug.Printf("3. Values are set by the system package configuration")
-		
+
 		// Try to get defaults from Apache itself
 		if defaults := tryGetApacheDefaults(config.MPMModel); defaults > 0 {
 			debug.Printf("Using detected Apache defaults: %d", defaults)
 			config.MaxRequestWorkers = defaults
 		}
 	}
-	
+
 	return scanner.Err()
 }
 
 // tryGetApacheDefaults attempts to get default values from Apache configuration
 func tryGetApacheDefaults(mpmModel string) int {
 	defer debug.Trace("tryGetApacheDefaults")()
-	
+
 	// Try to get defaults from httpd -V output
 	commands := [][]string{
 		{"httpd", "-V"},
@@ -235,17 +235,17 @@ func tryGetApacheDefaults(mpmModel string) int {
 		debug.Printf("Trying to get defaults from: %s %s", cmd[0], strings.Join(cmd[1:], " "))
 		output, err := exec.Command(cmd[0], cmd[1:]...).Output()
 		debug.DumpCommandOutput(cmd[0], cmd[1:], output, err)
-		
+
 		if err != nil {
 			continue
 		}
 
 		outputStr := string(output)
-		
+
 		// Look for server config defaults
 		if strings.Contains(outputStr, "DEFAULT_PIDLOG") {
 			debug.Printf("Found Apache build configuration")
-			
+
 			// Common defaults based on MPM
 			switch mpmModel {
 			case "prefork":
@@ -281,7 +281,7 @@ func extractIncludePath(line, baseDir string) string {
 
 func detectMPMModel() (string, error) {
 	defer debug.Trace("detectMPMModel")()
-	
+
 	commands := [][]string{
 		{"apache2ctl", "-M"},
 		{"httpd", "-M"},
@@ -292,7 +292,7 @@ func detectMPMModel() (string, error) {
 		debug.Printf("Trying command: %s %s", cmd[0], strings.Join(cmd[1:], " "))
 		output, err := exec.Command(cmd[0], cmd[1:]...).Output()
 		debug.DumpCommandOutput(cmd[0], cmd[1:], output, err)
-		
+
 		if err != nil {
 			debug.Printf("Command failed: %v", err)
 			continue
@@ -317,7 +317,7 @@ func detectMPMModel() (string, error) {
 
 func ParseWithVersion() (*ApacheConfig, error) {
 	defer debug.Trace("ParseWithVersion")()
-	
+
 	config, err := Parse()
 	if err != nil {
 		return config, err
@@ -338,19 +338,19 @@ func ParseWithVersion() (*ApacheConfig, error) {
 
 func GetVirtualHostCount(configPath string) int {
 	defer debug.Trace("GetVirtualHostCount")()
-	
+
 	if configPath == "" {
 		debug.Printf("No config path provided")
 		return 0
 	}
 
 	debug.Printf("Counting VirtualHost directives in: %s", configPath)
-	
+
 	// Count VirtualHost directives
 	cmd := exec.Command("grep", "-c", "<VirtualHost", configPath)
 	output, err := cmd.Output()
 	debug.DumpCommandOutput("grep", []string{"-c", "<VirtualHost", configPath}, output, err)
-	
+
 	if err != nil {
 		debug.Printf("grep command failed: %v", err)
 		return 0
@@ -368,7 +368,7 @@ func GetVirtualHostCount(configPath string) int {
 
 func detectApacheVersion() (string, string, error) {
 	defer debug.Trace("detectApacheVersion")()
-	
+
 	commands := [][]string{
 		{"apache2", "-v"},
 		{"httpd", "-v"},
@@ -380,7 +380,7 @@ func detectApacheVersion() (string, string, error) {
 		debug.Printf("Trying version detection command: %s %s", cmd[0], strings.Join(cmd[1:], " "))
 		output, err := exec.Command(cmd[0], cmd[1:]...).Output()
 		debug.DumpCommandOutput(cmd[0], cmd[1:], output, err)
-		
+
 		if err != nil {
 			debug.Printf("Version command failed: %v", err)
 			continue
@@ -411,7 +411,7 @@ func detectApacheVersion() (string, string, error) {
 func GetDefaults() *ApacheConfig {
 	defer debug.Trace("GetDefaults")()
 	debug.Printf("Using default Apache configuration")
-	
+
 	return &ApacheConfig{
 		MaxClients:        256,
 		MaxRequestWorkers: 256,

@@ -245,9 +245,9 @@ func TestDisplayEnhancedResults_WithOtherServices(t *testing.T) {
 	}
 
 	recommendations := &analysis.Recommendations{
-		CurrentMaxClients:  100,
-		Status:             "WARNING",
-		MPMNote:            "Apache is running in worker mode. Check manually for backend processes such as PHP-FPM and pm.max_children.",
+		CurrentMaxClients: 100,
+		Status:            "WARNING",
+		MPMNote:           "Apache is running in worker mode. Check manually for backend processes such as PHP-FPM and pm.max_children.",
 	}
 
 	logAnalysis := &logs.LogAnalysis{}
@@ -296,13 +296,13 @@ func TestDisplayEnhancedResults_WithExtendedStatus(t *testing.T) {
 	}
 
 	statusInfo := &status.ApacheStatus{
-		ActiveWorkers:     8,
-		IdleWorkers:       12,
-		RequestsPerSec:    2.5,
-		ExtendedEnabled:   true,
-		Load1Min:          0.8,
-		Load5Min:          0.6,
-		Load15Min:         0.4,
+		ActiveWorkers:   8,
+		IdleWorkers:     12,
+		RequestsPerSec:  2.5,
+		ExtendedEnabled: true,
+		Load1Min:        0.8,
+		Load5Min:        0.6,
+		Load15Min:       0.4,
 	}
 
 	logAnalysis := &logs.LogAnalysis{}
@@ -323,11 +323,11 @@ func TestDisplayEnhancedResults_WithExtendedStatus(t *testing.T) {
 func TestDetectServerBuilt(t *testing.T) {
 	// Test that function doesn't crash and returns a string
 	built := detectServerBuilt()
-	
+
 	if built == "" {
 		t.Error("detectServerBuilt should return a non-empty string")
 	}
-	
+
 	// In test environment, should return "Unknown"
 	if built != "Unknown" {
 		t.Logf("Detected server built: %s", built)
