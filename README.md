@@ -1,10 +1,11 @@
 # Apache2buddy-go
 
-[![CI](https://github.com/jamiefletcherdev/apache2buddy-go/workflows/CI/badge.svg)](https://github.com/jamiefletcherdev/apache2buddy-go/actions)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jamiefletcherdev/apache2buddy-go)](https://goreportcard.com/report/github.com/jamiefletcherdev/apache2buddy-go)
-[![codecov](https://codecov.io/gh/jamiefletcherdev/apache2buddy-go/branch/main/graph/badge.svg)](https://codecov.io/gh/jamiefletcherdev/apache2buddy-go)
+[![CI](https://github.com/jamiefletchertv/apache2buddy-go/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jamiefletchertv/apache2buddy-go/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jamiefletchertv/apache2buddy-go)](https://goreportcard.com/report/github.com/jamiefletchertv/apache2buddy-go)
+[![codecov](https://codecov.io/gh/jamiefletchertv/apache2buddy-go/branch/main/graph/badge.svg)](https://codecov.io/gh/jamiefletchertv/apache2buddy-go)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/jamiefletcherdev/apache2buddy-go)](https://golang.org/)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/jamiefletchertv/apache2buddy-go)](https://golang.org/)
+[![Docker Integration](https://img.shields.io/badge/Docker%20Integration-5%20Platforms-green)](https://github.com/jamiefletchertv/apache2buddy-go/actions/workflows/ci.yml)
 
 Apache2buddy-go is a Go rewrite of the popular Perl script that analyzes your Apache HTTP Server configuration and provides actionable recommendations for memory optimization and performance tuning.
 
@@ -42,7 +43,7 @@ The result? You get concrete numbers on how to tune your Apache configuration fo
 ### Build from Source (Required)
 
 ```bash
-git clone https://github.com/jamiefletcherdev/apache2buddy-go.git
+git clone https://github.com/jamiefletchertv/apache2buddy-go.git
 cd apache2buddy-go
 go build -o apache2buddy-go .
 ```
@@ -318,6 +319,34 @@ GitHub Actions automatically runs the full test suite on every push and pull req
 - **Cross-Platform Builds**: Verify builds work on all supported platforms
 - **Code Coverage**: Automatic coverage reporting via Codecov
 
+## 🐧 OS Support Status
+
+### Status Overview
+[![Maintained](https://img.shields.io/badge/Maintained-yes-green.svg)](https://github.com/jamiefletchertv/apache2buddy-go)
+[![Last Commit](https://img.shields.io/github/last-commit/jamiefletchertv/apache2buddy-go)](https://github.com/jamiefletchertv/apache2buddy-go/commits/main)
+[![Integration Tests](https://img.shields.io/badge/Integration%20Tests-5%20Platforms-green.svg)](https://github.com/jamiefletchertv/apache2buddy-go/actions/workflows/ci.yml)
+[![Docker](https://img.shields.io/badge/Docker-Supported-blue.svg)](https://github.com/jamiefletchertv/apache2buddy-go/blob/main/docker-compose.test.yml)
+
+### Apache Integration Testing
+
+**Alpine Linux**  
+[![Alpine httpd](https://img.shields.io/badge/Alpine%20httpd-Passing-green.svg)](https://github.com/jamiefletchertv/apache2buddy-go/blob/main/tests/docker/Dockerfile.httpd) [![Prefork MPM](https://img.shields.io/badge/prefork%20MPM-Supported-green.svg)](#)
+
+**Ubuntu**  
+[![Ubuntu 22.04](https://img.shields.io/badge/Ubuntu%2022.04-Passing-green.svg)](https://github.com/jamiefletchertv/apache2buddy-go/blob/main/tests/docker/Dockerfile.ubuntu) [![Event MPM](https://img.shields.io/badge/event%20MPM-Supported-green.svg)](#)
+
+**RedHat Family**  
+[![CentOS Stream 9](https://img.shields.io/badge/CentOS%20Stream%209-Passing-green.svg)](https://github.com/jamiefletchertv/apache2buddy-go/blob/main/tests/docker/Dockerfile.centos) [![Rocky Linux 9](https://img.shields.io/badge/Rocky%20Linux%209-Passing-green.svg)](https://github.com/jamiefletchertv/apache2buddy-go/blob/main/tests/docker/Dockerfile.rocky) [![AlmaLinux 9](https://img.shields.io/badge/AlmaLinux%209-Passing-green.svg)](https://github.com/jamiefletchertv/apache2buddy-go/blob/main/tests/docker/Dockerfile.alma)
+
+**Production Support**  
+[![Linux](https://img.shields.io/badge/Linux-Production-green.svg)](#) [![FreeBSD](https://img.shields.io/badge/FreeBSD-Production-green.svg)](#) [![macOS](https://img.shields.io/badge/macOS-Development-yellow.svg)](#)
+
+### Apache MPM Support
+[![Prefork](https://img.shields.io/badge/MPM-prefork-green.svg)](#) [![Worker](https://img.shields.io/badge/MPM-worker-green.svg)](#) [![Event](https://img.shields.io/badge/MPM-event-green.svg)](#)
+
+### Architecture Support  
+[![amd64](https://img.shields.io/badge/amd64-Supported-green.svg)](#) [![arm64](https://img.shields.io/badge/arm64-Supported-green.svg)](#)
+
 ## Contributing
 
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
@@ -332,6 +361,6 @@ Based on the original [apache2buddy.pl](https://github.com/richardforth/apache2b
 
 ## Support
 
-- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/jamiefletcherdev/apache2buddy-go/issues)
-- **Documentation**: Check the [Wiki](https://github.com/jamiefletcherdev/apache2buddy-go/wiki) for additional guides
-- **Community**: Join discussions in [GitHub Discussions](https://github.com/jamiefletcherdev/apache2buddy-go/discussions)
+- **Issues**: Report bugs and request features on [GitHub Issues](https://github.com/jamiefletchertv/apache2buddy-go/issues)
+- **Documentation**: Check the [Wiki](https://github.com/jamiefletchertv/apache2buddy-go/wiki) for additional guides
+- **Community**: Join discussions in [GitHub Discussions](https://github.com/jamiefletchertv/apache2buddy-go/discussions)
