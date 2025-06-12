@@ -10,6 +10,7 @@ import (
 
 	"apache2buddy-go/internal/analysis"
 	"apache2buddy-go/internal/config"
+	"apache2buddy-go/internal/debug"
 	"apache2buddy-go/internal/system"
 )
 
@@ -94,7 +95,9 @@ func isReadableLogFile(logPath string) bool {
 	if err != nil {
 		return false
 	}
-	file.Close()
+	if err := file.Close(); err != nil {
+		debug.Error(err, "closing log file in readability check")
+	}
 
 	return true
 }
@@ -104,7 +107,11 @@ func analyzeLogFile(logPath string, analysis *LogAnalysis) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			debug.Error(err, "closing log file")
+		}
+	}()
 
 	scanner := bufio.NewScanner(file)
 	linesRead := 0
@@ -164,7 +171,11 @@ func createLogEntryInternal(sysInfo *system.SystemInfo, memStats *analysis.Memor
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			debug.Error(err, "closing log file")
+		}
+	}()
 
 	timestamp := time.Now().Format("2006/01/02 15:04:05")
 
@@ -201,7 +212,11 @@ func GetRecentLogEntries(count int) ([]string, error) {
 			errChan <- err
 			return
 		}
-		defer file.Close()
+		defer func() {
+		if err := file.Close(); err != nil {
+			debug.Error(err, "closing log file")
+		}
+	}()
 
 		var lines []string
 		scanner := bufio.NewScanner(file)

@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"apache2buddy-go/internal/debug"
 )
 
 type SystemInfo struct {
@@ -30,7 +32,11 @@ func GetInfo() (*SystemInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot read /proc/meminfo: %v", err)
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			debug.Error(err, "closing /proc/meminfo")
+		}
+	}()
 
 	var totalKB, availableKB, freeKB, buffersKB, cachedKB int
 	scanner := bufio.NewScanner(file)

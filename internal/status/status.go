@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"apache2buddy-go/internal/debug"
 )
 
 // ApacheStatus contains comprehensive Apache server status information
@@ -132,7 +134,11 @@ func fetchStatus(url string) (*ApacheStatus, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			debug.Error(err, "closing response body")
+		}
+	}()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("HTTP %d", resp.StatusCode)
@@ -321,7 +327,11 @@ func fetchStatusHTML(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			debug.Error(err, "closing response body")
+		}
+	}()
 
 	if resp.StatusCode != 200 {
 		return "", fmt.Errorf("HTTP %d", resp.StatusCode)

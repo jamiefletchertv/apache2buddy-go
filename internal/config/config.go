@@ -101,7 +101,11 @@ func parseConfigFile(config *ApacheConfig, filePath string) error {
 		debug.Error(err, "opening config file")
 		return err
 	}
-	defer file.Close()
+	defer func() {
+		if err := file.Close(); err != nil {
+			debug.Error(err, "closing config file")
+		}
+	}()
 
 	scanner := bufio.NewScanner(file)
 	inMPMSection := false
@@ -126,7 +130,9 @@ func parseConfigFile(config *ApacheConfig, filePath string) error {
 			debug.Printf("Found Include directive: %s -> %s", line, includePath)
 			if includePath != "" && !strings.Contains(includePath, "*") {
 				debug.Printf("Recursively parsing include: %s", includePath)
-				parseConfigFile(config, includePath) // Recursive include
+				if err := parseConfigFile(config, includePath); err != nil {
+					debug.Error(err, "parsing included config file: "+includePath)
+				}
 			} else if strings.Contains(includePath, "*") {
 				debug.Printf("Skipping wildcard include: %s", includePath)
 				// TODO: Handle wildcard includes properly
