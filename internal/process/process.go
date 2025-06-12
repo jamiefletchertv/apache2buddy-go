@@ -25,7 +25,6 @@ func FindApacheProcesses() ([]ProcessInfo, error) {
 	return parseAuxFormat(string(output))
 }
 
-
 func parseAuxFormat(output string) ([]ProcessInfo, error) {
 	var processes []ProcessInfo
 	lines := strings.Split(string(output), "\n")

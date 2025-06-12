@@ -58,8 +58,8 @@ jobs:
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v8
       with:
-        version: latest
-        args: --timeout=5m
+        version: v1.54
+        args: --timeout=5m --enable=errcheck,gofmt,govet,staticcheck,unused --disable=gosec
 
   # security:
   #   runs-on: ubuntu-latest
