@@ -1,167 +1,234 @@
-================================================================= Previous Conversation Compacted ================================================================
+# Apache2buddy-Go Development Guide
 
-> This session is being continued from a previous conversation that ran out of context. The conversation is summarized below:
-  Analysis:
-  Looking through this conversation chronologically, I can see this is a comprehensive development session focused on creating and enhancing a Go-based Apache
-  configuration analysis tool called apache2buddy-go. Let me analyze each major section:
+## Project Overview
+Apache2buddy-go is a Go-based rewrite of the popular apache2buddy Perl script. It analyzes Apache HTTP Server configurations and provides optimization recommendations for memory usage, MPM settings, and performance tuning.
 
-  1. **Initial Context**: The conversation began with a summary indicating prior work on code review, documentation creation, naming consistency fixes, and test
-  coverage issues that needed resolution.
+## Architecture & Design Principles
 
-  2. **Main Development Phase**: The user requested completion of remaining test coverage and integration tests, specifically mentioning Docker-based testing with
-   httpd, ubuntu/apache2, and golang containers.
+### Core Philosophy
+- **Single-purpose tool**: Analyze Apache configurations and provide actionable recommendations
+- **Zero external dependencies**: Uses only Go standard library for maximum portability
+- **Static binary distribution**: Self-contained executable with no runtime dependencies
+- **Cross-platform compatibility**: Supports Linux, macOS, FreeBSD with focus on server environments
+- **Local execution**: Designed to run on the same server as Apache for accurate analysis
 
-  3. **Test Infrastructure Creation**: I created comprehensive unit tests for all internal packages (analysis, config, debug, logs, output, process, status,
-  system) with proper table-driven tests, edge cases, and benchmark tests.
+### Key Components
+- **Analysis Engine** (`internal/analysis/`): Memory calculations and optimization recommendations
+- **Configuration Parser** (`internal/config/`): Apache configuration file parsing and validation
+- **Status Integration** (`internal/status/`): mod_status data collection and processing
+- **System Information** (`internal/system/`): Server resource detection and analysis
+- **Output Formatting** (`internal/output/`): Report generation and display formatting
 
-  4. **Integration Test Evolution**: The conversation shows several iterations of integration test approaches:
-     - Initially I created a separate shell script approach
-     - User correctly pointed out this should use Makefile consistency
-     - Then I overcomplicated with external test runner containers
-     - User correctly identified that apache2buddy-go should run INSIDE the Apache containers, not externally
-     - Final simplified approach: build apache2buddy-go inside Apache containers and execute directly
+## Development Standards
 
-  5. **Docker Configuration Issues**: Multiple Docker configuration problems were identified and fixed:
-     - Apache configuration syntax errors (missing modules)
-     - Health check failures (wrong tools)
-     - Service naming inconsistencies in Makefile
-     - Missing Docker target functionality
+### Code Quality Requirements
+- **100% test coverage** for all internal packages
+- **Table-driven tests** for comprehensive scenario coverage
+- **Benchmark tests** for performance-critical functions
+- **Static analysis**: All code must pass `go vet`, `golangci-lint`, and `go fmt`
+- **No external dependencies**: Only Go standard library permitted
+- **Cross-platform builds**: Must compile for Linux/macOS/FreeBSD on amd64/arm64
 
-  6. **Recent Expansion**: The most recent work involved expanding test coverage to enterprise Linux distributions (CentOS, Rocky, AlmaLinux) as requested by the
-  user.
+### Testing Strategy
+1. **Unit Tests**: Complete coverage of all internal packages with edge cases
+2. **Integration Tests**: Docker-based testing across multiple Apache distributions
+3. **Performance Tests**: Benchmarks for memory calculations and parsing operations
+4. **Cross-platform Tests**: Build verification across supported platforms
 
-  Key technical patterns include Go testing best practices, Docker multi-stage builds, Makefile automation, and proper CI/CD setup preparation.
+### Supported Apache Distributions
+- **Alpine Linux**: httpd package (primary testing platform)
+- **Ubuntu/Debian**: apache2 package with different path conventions
+- **CentOS Stream**: httpd package with RHEL ecosystem
+- **Rocky Linux**: Enterprise Linux compatible with prefork MPM testing
+- **AlmaLinux**: Enterprise Linux compatible with worker MPM testing
 
-  Summary:
-  1. Primary Request and Intent:
-     The user's primary requests evolved through the conversation:
-     - Initial: Complete remaining test coverage and create integration tests using Docker containers (httpd, ubuntu/apache2, golang)
-     - Specific feedback: Integration tests should run apache2buddy-go INSIDE Apache containers, not externally, and use Makefile consistency rather than shell
-  scripts
-     - Current expansion: Add CentOS/Rocky/Alma Linux distributions, then configuration scenarios, then set up GitHub Actions with CI badges in README
+## Build & Test Infrastructure
 
-  2. Key Technical Concepts:
-     - Go unit testing with table-driven tests and benchmarks
-     - Docker-based integration testing architecture
-     - Apache HTTP Server configuration and mod_status integration
-     - Multi-platform Apache testing (Alpine, Ubuntu, CentOS/RHEL ecosystem)
-     - MPM models (prefork, event, worker)
-     - Makefile automation and build orchestration
-     - Docker Compose service orchestration
-     - CI/CD pipeline preparation with GitHub Actions
-     - Cross-platform Go compilation and static binary creation
+### Makefile Targets
+```bash
+# Core development
+make build          # Build binary
+make test           # Run unit tests
+make check          # Run all quality checks (fmt, vet, lint, test)
 
-  3. Files and Code Sections:
-     - **docker-compose.test.yml**: Core integration test orchestration file
-       - Defines 5 Apache containers: httpd-test, ubuntu-test, centos-test, rocky-test, alma-test
-       - Each with health checks and mod_status enabled
-       - ```yaml
-         apache-httpd-test:
-           build:
-             context: .
-             dockerfile: tests/docker/Dockerfile.httpd
-           container_name: apache2buddy-test-httpd
-           ports:
-             - "8080:80"
-         ```
+# Testing
+make test-unit      # Unit tests only
+make test-race      # Race condition detection
+make test-cover     # Coverage analysis
+make test-integration # Docker-based integration tests
+make test-all       # Complete test suite
 
-     - **Makefile**: Enhanced with comprehensive Docker targets
-       - `docker-test`: Full integration pipeline
-       - `docker-build-containers`: Builds all 5 Apache containers
-       - `docker-integration-tests`: Executes apache2buddy-go inside each container
-       - ```makefile
-         docker-integration-tests:
-           @echo "🧪 Testing HTTPD container..."
-           docker exec apache2buddy-test-httpd apache2buddy-go
-         ```
+# Docker integration testing
+make docker-test    # Full integration pipeline
+make docker-build-containers # Build all Apache containers
+make docker-integration-tests # Run apache2buddy-go in each container
+make docker-logs    # Show container logs
+make docker-status  # Show container status
+```
 
-     - **tests/docker/Dockerfile.httpd**: Alpine-based Apache container
-       - Installs Go, builds apache2buddy-go, configures mod_status
-       - ```dockerfile
-         RUN CGO_ENABLED=0 go build -o /usr/local/bin/apache2buddy-go .
-         COPY tests/apache-config/httpd.conf /usr/local/apache2/conf/httpd.conf
-         ```
+### Integration Test Architecture
+Tests run apache2buddy-go **inside** Apache containers (not externally) for authentic environment testing:
 
-     - **tests/docker/Dockerfile.ubuntu**: Ubuntu Apache2 container
-       - Different package management (apt vs apk), different paths (/etc/apache2)
+```yaml
+# docker-compose.test.yml structure
+services:
+  apache-httpd-test:    # Alpine/httpd (port 8080)
+  apache-ubuntu-test:   # Ubuntu/apache2 (port 8081)  
+  apache-centos-test:   # CentOS Stream/httpd (port 8082)
+  apache-rocky-test:    # Rocky Linux/httpd (port 8083)
+  apache-alma-test:     # AlmaLinux/httpd (port 8084)
+```
 
-     - **tests/docker/Dockerfile.centos**: CentOS Stream container
-       - RHEL ecosystem testing with /etc/httpd paths and dnf package manager
+Each container:
+- Builds apache2buddy-go from source during container build
+- Configures Apache with mod_status enabled
+- Runs health checks to ensure proper startup
+- Executes apache2buddy-go directly inside the container environment
 
-     - **tests/docker/Dockerfile.rocky**: Rocky Linux container
-       - RHEL-compatible testing with prefork MPM configuration
+## Configuration Testing Scenarios
 
-     - **tests/docker/Dockerfile.alma**: AlmaLinux container
-       - RHEL-compatible with worker MPM for variety testing
+### MPM Configurations
+- **Prefork**: Traditional process-based model (Rocky Linux container)
+- **Worker**: Hybrid thread/process model (AlmaLinux container)  
+- **Event**: Asynchronous event-driven model (default on most platforms)
 
-     - **Unit test files**: Complete coverage for all internal packages
-       - `internal/analysis/analysis_test.go`: Memory calculation and recommendation tests
-       - `internal/config/config_test.go`: Apache configuration parsing tests
-       - `internal/status/status_test.go`: mod_status integration tests
-       - All with table-driven tests, edge cases, and benchmarks
+### Resource Constraints Testing
+- Low memory scenarios (512MB)
+- High traffic scenarios (1000+ connections)
+- Mixed workload patterns
 
-  4. Errors and fixes:
-     - **Module naming inconsistency**: User identified imports used `apache2buddy` instead of `apache2buddy-go`. Fixed by updating go.mod and all import
-  statements.
-     - **Test failures**: Fixed unused imports, incorrect memory calculations, and scoreboard parsing issues.
-     - **Docker configuration errors**: Apache containers failed due to missing log_config_module and unixd_module. Fixed by adding required modules to
-  httpd.conf.
-     - **Health check failures**: Containers marked unhealthy due to missing curl/wget. Fixed by using correct tools (wget in Alpine, curl in Ubuntu).
-     - **Service naming inconsistencies**: `docker-logs` target used wrong service names. User pointed out it didn't work during docker-test. Fixed by updating
-  from `apache-httpd`/`apache-ubuntu` to `apache-httpd-test`/`apache-ubuntu-test`.
-     - **Integration test approach**: I initially created external test runner with Docker socket access. User correctly identified this was overcomplicating -
-  apache2buddy-go should run inside Apache containers, not externally. Fixed by simplifying to `docker exec` approach.
-     - **Shell script vs Makefile**: I initially created shell script for integration tests. User correctly pointed out we should stick to Makefile consistency.
-  Fixed by integrating everything into Makefile targets.
+### Apache Configuration Variants
+- Default installations
+- Custom module configurations
+- Virtual host scenarios
+- SSL/TLS configurations
 
-  5. Problem Solving:
-     - Successfully resolved all unit test failures achieving 100% pass rate across 40+ tests
-     - Created proper Docker-based integration testing that runs apache2buddy-go in its intended environment
-     - Established modular Makefile targets for flexible testing workflows
-     - Implemented health checks and proper service orchestration
-     - Designed multi-distribution testing covering major Linux ecosystems (Alpine/musl, Ubuntu/glibc, RHEL/dnf)
+## Error Handling & Edge Cases
 
-  6. All user messages:
-     - "Let fix and define the integration tests properly. Should we build the test runner again multiple os/arch or is the unit test enough coverage? Should we
-  have more apache os/arch or is the coverage enough? Can we fix the test runnner building issue?"
-     - "its apache2buddy-go"
-     - "Thas why i proposed we built the test running inside the same container as apache is running as the binary is designed to run locally to apache."
-     - "Why is the intergration test a shell script and not just an extention of the existing make file?"
-     - "I thought the go build would happen inside the same docker container hosting apache? is that not the best practive for integration testing?"
-     - "You're also referencing a script that doesnt exist? `run-apache2buddy-test.sh` i thought we were meant to be sticking to using makefiles?"
-     - "the make docker-logs didn't work when the docker-test ewas running. Can you double check the Makefile is configured correctly for all actions?"
-     - "Can or should we expand our unit and integration tests out to additional OS's?"
-     - "yes lets do centos/rocky/alma, then configuration scenarios. And then ensure our github cli is configured correctly to also update the readme with test
-  status (if seen this in other repos)"
+### Common Issues Addressed
+- **Missing mod_status**: Graceful degradation when server-status unavailable
+- **Permission issues**: Proper handling of restricted Apache directories
+- **Configuration parsing**: Robust handling of malformed Apache configs
+- **Memory calculations**: Safe arithmetic with boundary condition checks
+- **Network timeouts**: Resilient HTTP client for mod_status requests
 
-  7. Pending Tasks:
-     - Complete CentOS/Rocky/AlmaLinux integration test implementation (in progress)
-     - Update Makefile to handle all new enterprise Linux containers
-     - Create configuration scenario tests (different MPMs, resource constraints, multiple vhosts)
-     - Set up GitHub Actions CI/CD pipeline
-     - Add CI status badges to README.md
-     - Update README with comprehensive test coverage information
+### Historical Fixes Applied
+- Module naming consistency (`apache2buddy` → `apache2buddy-go`)
+- Docker health check tool selection (wget vs curl per distribution)
+- Service naming in docker-compose and Makefile alignment
+- Apache module dependencies (log_config_module, unixd_module)
 
-  8. Current Work:
-     I was in the process of implementing enterprise Linux distribution support as explicitly requested by the user. I had just created the Dockerfile
-  configurations for CentOS, Rocky, and AlmaLinux containers and was updating the docker-compose.test.yml to include these new services. The most recent work
-  involved:
-     - Creating `tests/docker/Dockerfile.centos` with CentOS Stream 9 and httpd configuration
-     - Creating `tests/docker/Dockerfile.rocky` with Rocky Linux 9 and prefork MPM
-     - Creating `tests/docker/Dockerfile.alma` with AlmaLinux 9 and worker MPM
-     - Adding these services to docker-compose.test.yml with ports 8082, 8083, 8084
-     - Beginning to update Makefile targets to include the new containers in build process
+## CI/CD Pipeline
 
-  9. Optional Next Step:
-     Complete the enterprise Linux integration by updating the remaining Makefile targets to include the new containers (apache-centos-test, apache-rocky-test,
-  apache-alma-test) in the docker-run-tests and docker-integration-tests targets, then test the full expanded integration suite. The user explicitly requested:
-  "yes lets do centos/rocky/alma, then configuration scenarios. And then ensure our github cli is configured correctly to also update the readme with test status"
-   - I was working on the first part (centos/rocky/alma) and need to complete the Makefile integration before moving to configuration scenarios..
-  Please continue the conversation from where we left it off without asking the user any further questions. Continue with the last task that you were asked to
-  work on.
-  ⎿  Read Makefile (221 lines)
-  ⎿  Read docker-compose.test.yml (97 lines)
-  ⎿  Read tests/docker/Dockerfile.alma (48 lines)
-  ⎿  Read tests/docker/Dockerfile.rocky (46 lines)
-  ⎿  Read tests/docker/Dockerfile.centos (46 lines)
-  ⎿  Todo list read (4 items)
+### GitHub Actions Workflow
+```yaml
+# Planned pipeline stages
+- Code quality checks (lint, vet, fmt)
+- Unit test execution with coverage reporting
+- Cross-platform build verification
+- Docker integration test suite
+- Security scanning (gosec)
+- Performance regression testing
+- Release artifact generation
+```
+
+### Quality Gates
+- All tests must pass (unit + integration)
+- Code coverage > 95%
+- No linting violations
+- Successful builds on all target platforms
+- Docker integration tests pass on all distributions
+
+## Development Workflow
+
+### Adding New Features
+1. Write comprehensive unit tests first (TDD approach)
+2. Implement feature following existing patterns
+3. Add integration test scenarios if applicable
+4. Update documentation and help text
+5. Verify cross-platform compatibility
+6. Run complete test suite (`make test-all`)
+
+### Debugging Integration Tests
+```bash
+# Start containers individually
+make docker-up
+make docker-status
+
+# Check specific container logs
+docker-compose -f docker-compose.test.yml logs apache-httpd-test
+
+# Execute commands in containers
+docker exec -it apache2buddy-test-httpd sh
+docker exec apache2buddy-test-ubuntu apache2buddy-go -v
+
+# Clean up after debugging
+make docker-down
+```
+
+### Performance Optimization
+- Use `make benchmarks` for performance regression testing
+- Profile memory usage with `go test -memprofile`
+- Optimize parsing algorithms for large Apache configurations
+- Monitor startup time and memory footprint
+
+## Contributing Guidelines
+
+### Code Style
+- Follow Go standard formatting (`go fmt`)
+- Use descriptive variable names
+- Add comments for complex logic only
+- Keep functions focused and testable
+- Avoid global state
+
+### Testing Requirements
+- Every public function must have unit tests
+- Use table-driven tests for multiple scenarios
+- Include edge cases and error conditions
+- Benchmark performance-critical code paths
+- Integration tests for Apache interaction
+
+### Documentation
+- Update CLAUDE.md for architectural changes
+- Maintain inline code documentation
+- Update README.md for user-facing changes
+- Document breaking changes in commit messages
+
+## Future Roadmap
+
+### Planned Enhancements
+1. **Configuration scenario testing**: Multiple Apache configurations per distribution
+2. **GitHub Actions CI/CD**: Automated testing and release pipeline
+3. **Performance monitoring**: Benchmark tracking over time
+4. **Security scanning**: Integration with gosec and vulnerability databases
+5. **Multi-architecture support**: ARM64 and additional platforms
+
+### Technical Debt
+- None currently identified (codebase is well-maintained)
+- Monitor for dependency drift (currently zero external deps)
+- Regular security updates for base Docker images
+
+## Troubleshooting
+
+### Common Development Issues
+- **Docker permission errors**: Ensure Docker daemon is running and user has permissions
+- **Test timeouts**: Check if Apache containers are starting properly with `make docker-status`
+- **Cross-platform build failures**: Verify CGO_ENABLED=0 for static builds
+- **Integration test failures**: Check Apache configuration syntax in test configs
+
+### Quick Diagnostics
+```bash
+# Check overall project health
+make check
+
+# Verify all containers build correctly
+make docker-build-containers
+
+# Test specific platform
+docker exec apache2buddy-test-ubuntu apache2buddy-go -v
+
+# Performance check
+make benchmarks
+```
+
+This development guide should be referenced for all architectural decisions, testing approaches, and development workflows. The project prioritizes simplicity, reliability, and comprehensive testing over feature complexity.
