@@ -213,10 +213,10 @@ func GetRecentLogEntries(count int) ([]string, error) {
 			return
 		}
 		defer func() {
-		if err := file.Close(); err != nil {
-			debug.Error(err, "closing log file")
-		}
-	}()
+			if err := file.Close(); err != nil {
+				debug.Error(err, "closing log file")
+			}
+		}()
 
 		var lines []string
 		scanner := bufio.NewScanner(file)

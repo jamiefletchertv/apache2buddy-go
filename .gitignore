@@ -67,3 +67,4 @@ examples/origin_logs/*
 
 # Release archives
 releases/
+internal/.DS_Store

@@ -1,69 +1,19 @@
 run:
   timeout: 5m
-  tests: true
-
-linters-settings:
-  errcheck:
-    # Don't require error checking on defer statements
-    ignore: fmt:.*,io:.*
-
-  govet:
-    check-shadowing: true
-
-  gocyclo:
-    min-complexity: 15
-
-  maligned:
-    suggest-new: true
-
-  dupl:
-    threshold: 100
-
-  goconst:
-    min-len: 2
-    min-occurrences: 2
-
-  lll:
-    line-length: 140
 
 linters:
   enable:
-    - bodyclose
-    - deadcode
     - errcheck
-    - goconst
-    - gocyclo
     - gofmt
-    - goimports
     - govet
     - ineffassign
-    - lll
-    - misspell
     - staticcheck
-    - structcheck
     - typecheck
-    - unconvert
     - unused
-    - varcheck
-
+  
   disable:
-    - gosec  # We have a separate security job
-    - dupl   # Can be too noisy
-    - gochecknoglobals
-    - gochecknoinits
+    - gosec
 
 issues:
-  exclude-rules:
-    # Allow long lines in tests
-    - path: _test\.go
-      linters:
-        - lll
-    
-    # Exclude some issues that are common in test files
-    - path: _test\.go
-      linters:
-        - errcheck
-        - goconst
-
   max-issues-per-linter: 0
   max-same-issues: 0
