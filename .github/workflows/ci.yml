@@ -22,7 +22,7 @@ jobs:
         go-version: ${{ matrix.go-version }}
 
     - name: Cache dependencies
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('go.mod') }}
@@ -127,7 +127,7 @@ jobs:
       uses: docker/setup-buildx-action@v3
     
     - name: Cache Docker layers
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: /tmp/.buildx-cache
         key: ${{ runner.os }}-buildx-${{ github.sha }}
